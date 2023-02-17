@@ -1,0 +1,25 @@
+{
+    "name": "echo/web3php",
+    "type": "library",
+    "description": "api",
+    "license": "Apache-2.0",
+
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+
+    "require": {
+        "php": ">=8.0",
+        "ext-bcmath": "*",
+        "ext-json": "*",
+        "hashwallet/tron-api": "dev-main",
+        "hashwallet/web3": "dev-main",
+        "web3p/ethereum-util": "^0.1.2",
+        "web3p/ethereum-tx": "^0.4.3"
+    },
+
+    "autoload": {
+        "psr-4": {
+            "Web3php\\": "src/"
+        }
+    }
+}
