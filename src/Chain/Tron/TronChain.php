@@ -6,6 +6,7 @@ use IEXBase\TronAPI\Exception\TronException;
 use IEXBase\TronAPI\Provider\HttpProvider;
 use IEXBase\TronAPI\Tron;
 use phpseclib\Math\BigInteger;
+use Web3\Utils;
 use Web3php\Address\AddressFactory;
 use Web3php\Address\AddressInterface;
 use Web3php\Chain\ChainInterface\ChainInterface;
@@ -112,6 +113,21 @@ class TronChain implements ChainInterface
         }
     }
 
+    public function getTransactionReceipt(string $hash): array
+    {
+        try {
+            $data = $this->tron->getTransactionInfo($hash);
+        } catch (TronException $e) {
+            throw new ChainException($e->getMessage());
+        }
+        return $data;
+    }
+
+    /**
+     * 只判断合约交易是否成功
+     * @param string $hash
+     * @return array
+     */
     public function checkHashStatus(string $hash): array
     {
         try {
@@ -123,7 +139,7 @@ class TronChain implements ChainInterface
             throw new ChainException(ErrorCode::TRANSACTION_BEING_PACKAGED);
         }
         if ($data['receipt']['result'] != 'SUCCESS') {
-            throw new ChainException(ErrorCode::TRANSACTION_FAILED, $this->tron->hexString2Utf8($data['contractResult'][0]));
+            throw new ChainException(ErrorCode::TRANSACTION_FAILED.$this->tron->hexString2Utf8($data['contractResult'][0]));
         }
         return $data["log"];
     }
@@ -155,6 +171,10 @@ class TronChain implements ChainInterface
 
     public function getAddress(string $address): AddressInterface
     {
+        if (Utils::isZeroPrefixed($address)) {
+            $address = $this->addressFactory->makeEthereumAddress($address);
+            return $this->addressFactory->ethereumToTron($address);
+        }
         return $this->addressFactory->makeTronAddress($address);
     }
 

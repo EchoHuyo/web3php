@@ -55,7 +55,7 @@ class ContractEvent
     /**
      * @param string $hash
      * @param bool $isCheck
-     * @return LogsItem[]|null
+     * @return array<string,LogsItem[]>|null
      */
     public function listener(string $hash, bool $isCheck = false): array|null
     {
@@ -73,21 +73,15 @@ class ContractEvent
             }
             $contractAddress = $this->chain->getAddress($log['address']);
             $eventSignature = $log['topics'][0];
-            $logsItems[] = new LogsItem($key, $contractAddress, $eventSignature, $log['topics'], $log["data"], $hash);
+            $logsItems[$contractAddress->getAddress()][] = new LogsItem($key, $contractAddress, $eventSignature, $log['topics'], $log["data"], $hash);
             if ($this->isLoadContractEvent && isset($this->contractEvents[$contractAddress->getAddress()])) {
-                /**
-                 * @var ContractEventLoadInterface $contractHuddle
-                 */
                 $contractHuddle = $this->contractEvents[$contractAddress->getAddress()];
-                $decodeInput = $contractHuddle->decodeEvent($log['topics']);
+                $decodeInput = $contractHuddle->decodeEvent($log['topics'],$log["data"]);
                 $contractHuddle->huddle($hash, $contractAddress, $decodeInput->name, $key, $decodeInput->decodeDate);
             }
             if ($this->isLoadEvent && isset($this->events[$eventSignature])) {
-                /**
-                 * @var EventLoadInterface $contractHuddle
-                 */
                 $contractHuddle = $this->events[$eventSignature];
-                $decodeInput = $contractHuddle->decodeEvent($log['topics']);
+                $decodeInput = $contractHuddle->decodeEvent($log['topics'],$log["data"]);
                 $contractHuddle->huddle($hash, $contractAddress, $decodeInput->name, $key, $decodeInput->decodeDate);
             }
         }

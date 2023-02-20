@@ -31,8 +31,6 @@ class EthereumContract extends AbstractContract
     public function __construct(protected Ethereum $chain, protected ContractConfig $config)
     {
         $this->reloadConfig($config);
-        $this->contractCall = new EthereumContractCall($this);
-        $this->contractSend = new EthereumContractSend($this);
     }
 
     /**
@@ -52,6 +50,8 @@ class EthereumContract extends AbstractContract
         $this->contractAddress = $config->address;
         $this->config = $config;
         $this->contract = (new Contract($this->chain->getWeb3()->getProvider(), $this->config->abi))->at($this->contractAddress->getAddress());
+        $this->contractCall = new EthereumContractCall($this);
+        $this->contractSend = new EthereumContractSend($this);
         $this->loadEvent();
     }
 
@@ -63,6 +63,8 @@ class EthereumContract extends AbstractContract
     {
         $this->contractAddress = $address;
         $this->contract = (new Contract($this->chain->getWeb3()->getProvider(), $this->config->abi))->at($address->getAddress());
+        $this->contractCall = new EthereumContractCall($this);
+        $this->contractSend = new EthereumContractSend($this);
     }
 
     /**
@@ -149,9 +151,10 @@ class EthereumContract extends AbstractContract
 
     /**
      * @param array $topics
+     * @param string $data
      * @return DecodeInputItem
      */
-    public function decodeEvent(array $topics): DecodeInputItem
+    public function decodeEvent(array $topics,string $data): DecodeInputItem
     {
         $signature = array_shift($topics);
         $event = $this->getContractEvent($signature);
@@ -172,7 +175,7 @@ class EthereumContract extends AbstractContract
                 }
             }
             if (!empty($valueInput)) {
-                $valueData = $this->contract->getEthabi()->decodeParameters($valueInput, $topics['data']);
+                $valueData = $this->contract->getEthabi()->decodeParameters($valueInput, $data);
                 $inputsData = [];
                 foreach ($valueInput as $k => $type) {
                     $inputsData[$key[$k]] = $this->format($type, $key[$k], $valueData[$k]);

@@ -10,7 +10,6 @@ use Web3php\Address\Utils\TronAddressUtil;
 
 class TronAddress implements AddressInterface
 {
-
     public function __construct(protected string $address)
     {
         if(!static::isAddress($this->address)){

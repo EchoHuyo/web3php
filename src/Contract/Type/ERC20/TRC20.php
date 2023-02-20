@@ -9,7 +9,10 @@ use Web3php\Contract\TronContract;
 
 class TRC20 extends TronContract implements IERC20Interface
 {
-    protected int $decimals = 0;
+    /**
+     * @var array<string,int>
+     */
+    protected array $decimals = [];
 
     public function name(): string
     {
@@ -23,11 +26,12 @@ class TRC20 extends TronContract implements IERC20Interface
 
     public function decimals(): int
     {
-        if ($this->decimals == 0) {
+        $address = $this->getContractAddress()->getAddress();
+        if (!isset($this->decimals[$address])) {
             $decimals = current($this->call()->decimals());
-            $this->decimals = (int)$decimals->toString();
+            $this->decimals[$address] = (int)$decimals->toString();
         }
-        return $this->decimals;
+        return $this->decimals[$address];
     }
 
     public function totalSupply(): string

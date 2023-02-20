@@ -1,4 +1,5 @@
 <?php
+namespace Web3php\Chain;
 
 use Web3php\Address\AddressFactory;
 use Web3php\Chain\Config\ChainConfig;
@@ -13,12 +14,12 @@ class ChainFactory
 
     }
 
-    public function makeEthereum(ChainConfig $config):ChainInterface
+    public function makeEthereum(ChainConfig $config):Ethereum
     {
         return new Ethereum($config,$this->addressFactory);
     }
 
-    public function makeTron(ChainConfig $config):ChainInterface
+    public function makeTron(ChainConfig $config):TronChain
     {
         return new TronChain($config,$this->addressFactory);
     }

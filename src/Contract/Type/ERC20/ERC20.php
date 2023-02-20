@@ -9,7 +9,13 @@ use Web3php\Contract\EthereumContract;
 
 class ERC20 extends EthereumContract implements IERC20Interface
 {
-    protected int $decimals = 0;
+
+
+
+    /**
+     * @var array<string,int>
+     */
+    protected array $decimals = [];
 
     public function name(): string
     {
@@ -23,11 +29,12 @@ class ERC20 extends EthereumContract implements IERC20Interface
 
     public function decimals(): int
     {
-        if ($this->decimals == 0) {
+        $address = $this->getContractAddress()->getAddress();
+        if (!isset($this->decimals[$address])) {
             $decimals = current($this->call()->decimals());
-            $this->decimals = (int)$decimals->toString();
+            $this->decimals[$address] = (int)$decimals->toString();
         }
-        return $this->decimals;
+        return $this->decimals[$address];
     }
 
     public function totalSupply(): string
@@ -95,5 +102,15 @@ class ERC20 extends EthereumContract implements IERC20Interface
     public function toWei(string $amount): BigInteger
     {
         return $this->getChain()->toWei($amount, $this->decimals());
+    }
+
+    public function format(string $type, string $paramName, mixed $param): mixed
+    {
+        $param = parent::format( $type,  $paramName,  $param);
+        if($paramName == "to"){
+            return  "这是一个to地址";
+        }else{
+            return $param;
+        }
     }
 }

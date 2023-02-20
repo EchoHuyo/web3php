@@ -15,18 +15,14 @@ class TronContractCall implements ContractCallInterface
 
     public function __call(string $name, array $arguments)
     {
-        $ownerAddress = $this->contract->getChain()->getSender()->address->getAddress();
-        if (empty($ownerAddress)) {
-            $ownerAddress = '410000000000000000000000000000000000000000';
-        }
+        var_dump($this->contract->getContractAddress()->getAddress());
         $tron = $this->contract->getChain()->getTron();
         return $tron->getTransactionBuilder()
             ->triggerConstantContract(
                 json_decode($this->contract->getConfig()->abi, true),
-                $tron->address2HexString($this->contract->getContractAddress()),
+                $tron->address2HexString($this->contract->getContractAddress()->getAddress()),
                 $name,
-                $arguments,
-                $tron->address2HexString($ownerAddress)
+                $arguments
             );
     }
 }

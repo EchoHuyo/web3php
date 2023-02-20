@@ -12,11 +12,11 @@ class TronContractSend implements ContractSendInterface
     {
     }
 
-    public function __call(string $name, array $arguments)
+    public function __call(string $name, array $arguments): string
     {
         $tron = $this->contract->getChain()->getTron();
         $owner = $this->contract->getChain()->getSender();
-        $feeLimit = bcmul('100', (string) TRC20Contract::TRX_TO_SUN);
+        $feeLimit = bcmul('100', (string)TRC20Contract::TRX_TO_SUN);
         $transfer = $tron->getTransactionBuilder()
             ->triggerSmartContract(
                 json_decode($this->contract->getConfig()->abi, true),

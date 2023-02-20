@@ -18,7 +18,7 @@ class ERC20Factory
     public function makeERC20(Ethereum $chain,AddressInterface $address):ERC20
     {
         if(empty($this->ERC20)){
-            $this->ERC20 = new ERC20($chain,new ContractConfig($address,$this->abi));
+            $this->ERC20 = new ERC20($chain,new ContractConfig($address,$this->abi,["Transfer"]));
         }
         return clone $this->ERC20;
     }
@@ -26,7 +26,7 @@ class ERC20Factory
     public function makeTRC20(TronChain $chain,AddressInterface $address):TRC20
     {
         if(empty($this->TRC20)){
-            $this->TRC20 = new TRC20($chain,new ContractConfig($address,$this->abi));
+            $this->TRC20 = new TRC20($chain,new ContractConfig($address,$this->abi,["Transfer"]));
         }
         return clone $this->TRC20;
     }

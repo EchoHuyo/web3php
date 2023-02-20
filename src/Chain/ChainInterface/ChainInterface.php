@@ -29,6 +29,8 @@ interface ChainInterface
     // 检查交易 是否成功
     public function checkHashStatus(string $hash): array;
 
+    public function getTransactionReceipt(string $hash):mixed;
+
     //获取当前区块高度
     public function getBlock(): int;
 

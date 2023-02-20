@@ -19,7 +19,8 @@ interface BaseEventInterface
 
     /**
      * @param array $topics
+     * @param string $data
      * @return DecodeInputItem
      */
-    public function decodeEvent(array $topics): DecodeInputItem;
+    public function decodeEvent(array $topics,string $data): DecodeInputItem;
 }

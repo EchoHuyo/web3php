@@ -12,13 +12,9 @@ use Web3php\Contract\Send\TronContractSend;
 
 class TronContract extends AbstractContract
 {
-    protected AddressInterface $contractAddress;
-
     public function __construct(protected TronChain $chain, protected ContractConfig $config)
     {
         $this->setContractAddress($this->config->address);
-        $this->contractCall = new TronContractCall($this);
-        $this->contractSend = new TronContractSend($this);
     }
 
     public function getChain():TronChain
@@ -34,6 +30,8 @@ class TronContract extends AbstractContract
     public function setContractAddress(AddressInterface $address):void
     {
         $this->contractAddress = $address;
+        $this->contractCall = new TronContractCall($this);
+        $this->contractSend = new TronContractSend($this);
     }
 
     public function formatAddress(AddressInterface $address): string

@@ -14,7 +14,10 @@
         "hashwallet/tron-api": "dev-main",
         "hashwallet/web3": "dev-main",
         "web3p/ethereum-util": "^0.1.2",
-        "web3p/ethereum-tx": "^0.4.3"
+        "web3p/ethereum-tx": "^0.4.3",
+        "ext-openssl": "*",
+        "sop/crypto-encoding": "^0.3.0",
+        "sop/crypto-types": "^0.3.0"
     },
 
     "autoload": {

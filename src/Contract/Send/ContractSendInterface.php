@@ -6,5 +6,5 @@ namespace Web3php\Contract\Send;
 
 interface ContractSendInterface
 {
-    public function __call(string $name, array $arguments);
+    public function __call(string $name, array $arguments): string;
 }
