@@ -3,29 +3,20 @@
 namespace Web3php\Contract\Event;
 
 use Web3php\Chain\ChainInterface\ChainInterface;
+use Web3php\Contract\Event\EventContract\EventContractInterface;
+use Web3php\Contract\Event\EventSignature\EventSignatureInterface;
 
 class ContractEventFactory
 {
-    /**
-     * @var array<string, ContractEvent>
-     */
-    public array $contractEvents;
-
-    public function __construct()
-    {
-
-    }
 
     /**
      * @param ChainInterface $chain
-     * @param string $name
+     * @param EventSignatureInterface $eventSignature
+     * @param EventContractInterface|null $eventContract
      * @return ContractEvent
      */
-    public function make(ChainInterface $chain, string $name): ContractEvent
+    public function make(ChainInterface $chain,EventSignatureInterface $eventSignature,?EventContractInterface $eventContract): ContractEvent
     {
-        if (empty($this->contractEvents[$name])) {
-            $this->contractEvents[$name] = new ContractEvent($chain);
-        }
-        return $this->contractEvents[$name];
+        return new ContractEvent($chain,$eventSignature,$eventContract);
     }
 }

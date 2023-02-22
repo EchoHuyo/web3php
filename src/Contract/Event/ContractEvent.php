@@ -2,89 +2,86 @@
 
 namespace Web3php\Contract\Event;
 
+use phpseclib\Math\BigInteger;
+use Web3\Utils;
 use Web3php\Chain\ChainInterface\ChainInterface;
-use Web3php\Constants\Errors\ChainErrors\ErrorCode;
+use Web3php\Contract\Event\EventContract\EventContractInterface;
+use Web3php\Contract\Event\EventSignature\EventSignatureInterface;
 use Web3php\Contract\Event\Item\LogsItem;
-use Web3php\Exception\ChainException;
 
 class ContractEvent
 {
     /**
-     * @var array<string,EventLoadInterface>
+     * @param ChainInterface $chain
+     * @param EventSignatureInterface $eventSignature
+     * @param EventContractInterface|null $eventContract
      */
-    protected array $events = [];
-
-    /**
-     * @var array<string,ContractEventLoadInterface>
-     */
-    protected array $contractEvents = [];
-
-    protected bool $isLoadEvent = false;
-
-    protected bool $isLoadContractEvent = false;
-
-    public function __construct(protected ChainInterface $chain)
+    public function __construct(
+        protected ChainInterface          $chain,
+        protected EventSignatureInterface $eventSignature,
+        protected ?EventContractInterface  $eventContract
+    )
     {
 
     }
 
-    /**
-     * @param EventLoadInterface[] $events
-     * @return void
-     */
-    public function loadEvent(array $events): void
-    {
-        foreach ($events as $event) {
-            $this->events[$event->getEventSignature()] = $event;
-        }
-        $this->isLoadEvent = true;
-    }
 
-    /**
-     * @param ContractEventLoadInterface[] $events
-     * @return void
-     */
-    public function loadContractEvents(array $events): void
-    {
-        foreach ($events as $event) {
-            $this->contractEvents[$event->getContractAddress()->getAddress()] = $event;
-        }
-        $this->isLoadContractEvent = true;
-    }
+
 
     /**
      * @param string $hash
-     * @param bool $isCheck
-     * @return array<string,LogsItem[]>|null
+     * @return LogsItem[]|null
      */
-    public function listener(string $hash, bool $isCheck = false): array|null
+    public function listener(string $hash): array|null
     {
-        if ($isCheck && !$this->isLoadEvent && !$this->isLoadContractEvent) {
-            throw new ChainException(ErrorCode::UNINITIALIZED_EVENT);
-        }
         /**
          * @var LogsItem[] $logsItems
          */
         $logsItems = null;
         $logs = $this->chain->checkHashStatus($hash);
-        foreach ($logs as $key => $log) {
+        foreach ($logs as $log) {
             if (!is_array($log)) {
                 $log = (array)$log;
             }
             $contractAddress = $this->chain->getAddress($log['address']);
             $eventSignature = $log['topics'][0];
-            $logsItems[$contractAddress->getAddress()][] = new LogsItem($key, $contractAddress, $eventSignature, $log['topics'], $log["data"], $hash);
-            if ($this->isLoadContractEvent && isset($this->contractEvents[$contractAddress->getAddress()])) {
-                $contractHuddle = $this->contractEvents[$contractAddress->getAddress()];
-                $decodeInput = $contractHuddle->decodeEvent($log['topics'],$log["data"]);
-                $contractHuddle->huddle($hash, $contractAddress, $decodeInput->name, $key, $decodeInput->decodeDate);
+            $logsItem = new LogsItem(
+                $this->hexToInt($log["logIndex"]),
+                $contractAddress->getAddress(),
+                $eventSignature,
+                $log['topics'],
+                $log["data"],
+                $hash,
+                $this->hexToInt($log["blockNumber"]),
+                $this->hexToInt($log["transactionIndex"]),
+                $log["blockHash"],
+                null
+            );
+            if($this->eventContract){
+                $eventContract = $this->eventContract->retrieveContractAddress($contractAddress);
+                if ($eventContract) {
+                    $logsItem = $this->huddle($eventContract, $logsItem);
+                }
             }
-            if ($this->isLoadEvent && isset($this->events[$eventSignature])) {
-                $contractHuddle = $this->events[$eventSignature];
-                $decodeInput = $contractHuddle->decodeEvent($log['topics'],$log["data"]);
-                $contractHuddle->huddle($hash, $contractAddress, $decodeInput->name, $key, $decodeInput->decodeDate);
+            $signatureEvent = $this->eventSignature->retrieveEventSignature($eventSignature);
+            if ($signatureEvent) {
+                $logsItem = $this->huddle($signatureEvent, $logsItem);
             }
+            $logsItems[] = $logsItem;
         }
         return $logsItems;
+    }
+
+    protected function huddle(DecodeEventInterface $contractHuddle, LogsItem $logsItem): LogsItem
+    {
+        $decodeInput = $contractHuddle->decodeEvent($logsItem->topics, $logsItem->data);
+        $logsItem->decodeInputItem = $decodeInput;
+        $contractHuddle->huddle($logsItem);
+        return $logsItem;
+    }
+
+    protected function hexToInt(string $hex): int
+    {
+        return (int)(new BigInteger($hex, "16"))->toString();
     }
 }

@@ -6,95 +6,108 @@ use Web3php\Address\Utils\TronAddressUtil;
 use Web3php\Chain\ChainFactory;
 use Web3php\Chain\Config\ChainConfig;
 use Web3php\Contract\Event\ContractEventFactory;
-use Web3php\Contract\Event\EventLoadInterface;
 use Web3php\Contract\Type\ERC20\ERC20Factory;
+use Web3php\Contract\Type\Erc20And721Transfer\Erc20And721TransferEventContract;
+use Web3php\Contract\Type\Erc20And721Transfer\ERC20And721TransferEventContractFactory;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
 
 $addressFactory = new AddressFactory(new Util(), new TronAddressUtil());
 $chainFactory = new ChainFactory($addressFactory);
-$ethConfig = new ChainConfig("http://rpc.com", "1", "1");
+$ethConfig = new ChainConfig("http://rpc.cn", "1", "1");
 $ethChain = $chainFactory->makeEthereum($ethConfig);
 
 $contractEventFactory = new ContractEventFactory();
-$contractEvent = $contractEventFactory->make($ethChain,"test");
 
-class testEvent implements EventLoadInterface{
 
-    public function __construct(
-        protected \Web3php\Contract\AbstractContract $contract
-    )
+class RetrieveSignature implements \Web3php\Contract\Event\EventSignature\EventSignatureInterface
+{
+
+    protected array $signature;
+
+    public function load(test $test)
     {
-
+        $this->signature[\Web3php\Contract\Event\AbstractEventDecode::formatSignature($test->getSignature())] = $test;
     }
 
-    public function huddle(string $hash, \Web3php\Address\AddressInterface $contractAddress, string $eventName, int $logKey, array $data): void
+    public function retrieveEventSignature(string $signature): ?\Web3php\Contract\Event\DecodeEventInterface
     {
-        var_dump("编码打印");
-        var_dump(
-            $hash,
-            $contractAddress->getAddress(),
-            $eventName,
-            $logKey,
-            $data
-        );
-    }
-
-    public function decodeEvent(array $topics,string $data): \Web3php\Contract\Event\Item\DecodeInputItem
-    {
-        return $this->contract->decodeEvent($topics,$data);
-    }
-
-    public function getEventSignature(): string
-    {
-        return "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+        $signature = \Web3php\Contract\Event\AbstractEventDecode::formatSignature($signature);
+        return $this->signature[$signature] ?? null;
     }
 }
 
-class testContractEvent implements \Web3php\Contract\Event\ContractEventLoadInterface {
+class RetrieveAddress implements \Web3php\Contract\Event\EventContract\EventContractInterface
+{
 
-    public function __construct(
-        protected \Web3php\Contract\AbstractContract $contract
-    )
+    protected array $addresses;
+
+    public function load(test $test)
     {
-
+        $this->addresses[$test->getAddress()->getAddress()] = $test;
     }
 
-    public function huddle(string $hash, \Web3php\Address\AddressInterface $contractAddress, string $eventName, int $logKey, array $data): void
+    public function retrieveContractAddress(\Web3php\Address\AddressInterface $address): ?\Web3php\Contract\Event\DecodeEventInterface
     {
-        var_dump("合约打印");
-        var_dump(
-            $hash,
-            $contractAddress->getAddress(),
-            $eventName,
-            $logKey,
-            $data
-        );
-    }
-
-    public function decodeEvent(array $topics,string $data): \Web3php\Contract\Event\Item\DecodeInputItem
-    {
-        return $this->contract->decodeEvent($topics,$data);
-    }
-
-    public function getContractAddress(): \Web3php\Address\AddressInterface
-    {
-        return $this->contract->getContractAddress();
+        return $this->addresses[$address->getAddress()] ?? null;
     }
 }
-$erc20Factory = new ERC20Factory();
 
-$events = [
-    new testEvent($erc20Factory->makeERC20($ethChain,$ethChain->getAddress("0x6029058d62ada392a928569354de7ae35d8e7897")))
-];
-$ContractEvents = [
-    new testContractEvent($erc20Factory->makeERC20($ethChain,$ethChain->getAddress("0x6029058d62ada392a928569354de7ae35d8e7897")))
-];
-$contractEvent->loadEvent($events);
-$contractEvent->loadContractEvents($ContractEvents);
+
+class test extends \Web3php\Contract\Event\AbstractEventDecode
+{
+
+    protected Erc20And721TransferEventContract $eventContract;
+
+    public function __construct(
+        protected \Web3php\Chain\Ethereum\Ethereum        $chain,
+        protected ERC20And721TransferEventContractFactory $contractFactory
+    )
+    {
+        $this->eventContract = $this->contractFactory->make($this->chain);
+    }
+
+    public function decodeEvent(array $topics, string $data): \Web3php\Contract\Event\Item\DecodeInputItem
+    {
+        return $this->eventContract->decodeEvent($topics, $data);
+    }
+
+    public function huddle(\Web3php\Contract\Event\Item\LogsItem $logsItem): void
+    {
+        var_dump($logsItem);
+    }
+
+    public function getSignature(): string
+    {
+        return $this->eventContract->getSignature();
+    }
+
+    public function getAddress(): \Web3php\Address\AddressInterface
+    {
+        return $this->chain->getAddress("0x6029058D62AdA392A928569354De7ae35D8e7897");
+    }
+}
+
+$ERC20And721TransferEventContractFactory = new ERC20And721TransferEventContractFactory();
+//$erc20And721 = $ERC20And721TransferEventContractFactory->make($ethChain);
+
+$test = new test($ethChain, $ERC20And721TransferEventContractFactory);
+$retrieveSignature = new RetrieveSignature();
+$retrieveSignature->load($test);
+
+$retrieveAddress = new RetrieveAddress();
+$retrieveAddress->load($test);
+
+$contractEvent = $contractEventFactory->make($ethChain, $retrieveSignature, $retrieveAddress);
+
+
 $data = $contractEvent->listener("0xe4711a46046afadb23e039697cf75d7790bb36d52ad09d977314c0a8df660774");
-var_dump($data);
+//var_dump($data);
+
+
+
+
 
 
 

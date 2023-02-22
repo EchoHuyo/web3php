@@ -4,12 +4,13 @@ namespace Web3php\Contract\Type\Erc20And721Transfer;
 
 use Web3\Utils;
 use Web3php\Contract\EthereumContract;
+use Web3php\Contract\Event\AbstractEventDecode;
 use Web3php\Contract\Event\Item\DecodeInputItem;
 
 class Erc20And721TransferEventContract extends EthereumContract
 {
-
     protected string $signature = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+
     protected array $erc20Event = [
         "name" => "Transfer",
         "event" => [
@@ -67,14 +68,14 @@ class Erc20And721TransferEventContract extends EthereumContract
      * @param string $data
      * @return DecodeInputItem
      */
-    public function decodeEvent(array $topics,string $data): DecodeInputItem
+    public function decodeEvent(array $topics, string $data): DecodeInputItem
     {
         $signature = array_shift($topics);
         $inputs = [];
         $name = "";
-        if(mb_strtolower(Utils::stripZero($signature)) === mb_strtolower(Utils::stripZero($this->signature))){
+        if (AbstractEventDecode::signatureCompare($signature, $this->signature)) {
             $event = $this->erc20Event;
-            if(count($topics)>2){
+            if (count($topics) > 2) {
                 $event = $this->erc721Event;
             }
             $name = $event['name'];
@@ -100,5 +101,10 @@ class Erc20And721TransferEventContract extends EthereumContract
             }
         }
         return new DecodeInputItem($name, $inputs);
+    }
+
+    public function getSignature(): string
+    {
+        return $this->signature;
     }
 }
