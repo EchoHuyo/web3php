@@ -9,6 +9,8 @@ use Web3php\Address\AddressInterface;
 use Web3php\Chain\Ethereum\Ethereum;
 use Web3php\Contract\Call\EthereumContractCall;
 use Web3php\Contract\Config\ContractConfig;
+use Web3php\Contract\Event\AbstractEventDecode;
+use Web3php\Contract\Event\DecodeEventInterface;
 use Web3php\Contract\Event\Item\DecodeInputItem;
 use Web3php\Contract\Send\EthereumContractSend;
 
@@ -45,7 +47,7 @@ class EthereumContract extends AbstractContract
      * @param ContractConfig $config
      * @return void
      */
-    public function reloadConfig(ContractConfig $config):void
+    public function reloadConfig(ContractConfig $config): void
     {
         $this->contractAddress = $config->address;
         $this->config = $config;
@@ -107,7 +109,7 @@ class EthereumContract extends AbstractContract
         foreach ($functions as $function) {
             $functionName = Utils::jsonMethodToString($function);
             $functionNameCode = $this->contract->getEthabi()->encodeFunctionSignature($functionName);
-            if ($functionNameCode == substr($encodeInput, 0, 10)) {
+            if (AbstractEventDecode::signatureCompare($functionNameCode, substr($encodeInput, 0, 10))) {
                 $functionName = $function['name'];
                 $encodeInput = '0x' . substr($encodeInput, 10, mb_strlen($encodeInput));
                 $types = [];
@@ -120,10 +122,14 @@ class EthereumContract extends AbstractContract
                         }
                     }
                 }
-                $inputs = array_combine($key, $this->contract->getEthabi()->decodeParameters($types, $encodeInput));
+                $decodeInputs = $this->contract->getEthabi()->decodeParameters($types, $encodeInput);
+//                $inputs = array_combine($key, $decodeInputs);
+                foreach ($types as $k => $type) {
+                    $inputs[$key[$k]] = $this->format($type, $key[$k], $decodeInputs[$k]);
+                }
             }
         }
-        return new DecodeInputItem($functionName,$inputs);
+        return new DecodeInputItem($functionName, $inputs);
     }
 
     public function getContractEvent(string $signature): array
@@ -152,9 +158,10 @@ class EthereumContract extends AbstractContract
     /**
      * @param array $topics
      * @param string $data
+     * @param DecodeEventInterface $decodeEvent
      * @return DecodeInputItem
      */
-    public function decodeEvent(array $topics,string $data): DecodeInputItem
+    public function decodeEvent(array $topics, string $data, DecodeEventInterface $decodeEvent): DecodeInputItem
     {
         $signature = array_shift($topics);
         $event = $this->getContractEvent($signature);
@@ -168,7 +175,7 @@ class EthereumContract extends AbstractContract
                 if ($input['indexed']) {
                     $param = array_shift($topics);
                     $value = current($this->contract->getEthabi()->decodeParameters([$input['type']], $param));
-                    $inputs[$input['name']] = $this->format($input['type'], $input['name'], $value);
+                    $inputs[$input['name']] = $decodeEvent->formatParam($input['type'], $input['name'], $value);
                 } else {
                     $valueInput[] = $input['type'];
                     $key[] = $input['name'];
@@ -178,12 +185,13 @@ class EthereumContract extends AbstractContract
                 $valueData = $this->contract->getEthabi()->decodeParameters($valueInput, $data);
                 $inputsData = [];
                 foreach ($valueInput as $k => $type) {
-                    $inputsData[$key[$k]] = $this->format($type, $key[$k], $valueData[$k]);
+                    $inputsData[$key[$k]] = $decodeEvent->formatParam($type, $key[$k], $valueData[$k]);
                 }
                 $inputs = array_merge($inputs, $inputsData);
             }
         }
         return new DecodeInputItem($name, $inputs);
     }
+
 
 }

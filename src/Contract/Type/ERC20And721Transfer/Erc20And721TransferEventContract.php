@@ -5,6 +5,7 @@ namespace Web3php\Contract\Type\Erc20And721Transfer;
 use Web3\Utils;
 use Web3php\Contract\EthereumContract;
 use Web3php\Contract\Event\AbstractEventDecode;
+use Web3php\Contract\Event\DecodeEventInterface;
 use Web3php\Contract\Event\Item\DecodeInputItem;
 
 class Erc20And721TransferEventContract extends EthereumContract
@@ -66,9 +67,10 @@ class Erc20And721TransferEventContract extends EthereumContract
     /**
      * @param array $topics
      * @param string $data
+     * @param DecodeEventInterface $decodeEvent
      * @return DecodeInputItem
      */
-    public function decodeEvent(array $topics, string $data): DecodeInputItem
+    public function decodeEvent(array $topics, string $data, DecodeEventInterface $decodeEvent): DecodeInputItem
     {
         $signature = array_shift($topics);
         $inputs = [];
