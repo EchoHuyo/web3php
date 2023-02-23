@@ -20,11 +20,4 @@ interface DecodeEventInterface
      */
     public function decodeEvent(array $topics,string $data): DecodeInputItem;
 
-    /**
-     * @param string $type
-     * @param string $paramName
-     * @param mixed $param
-     * @return mixed
-     */
-    public function formatParam(string $type,string $paramName, mixed $param): mixed;
 }

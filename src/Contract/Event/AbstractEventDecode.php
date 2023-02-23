@@ -21,18 +21,4 @@ Abstract class AbstractEventDecode implements DecodeEventInterface
     {
        //todo
     }
-
-    /**
-     * @param string $type
-     * @param string $paramName
-     * @param mixed $param
-     * @return mixed
-     */
-    public function formatParam(string $type,string $paramName, mixed $param): mixed
-    {
-        if ($type == 'uint256') {
-            $param = $param->toString();
-        }
-        return $param;
-    }
 }

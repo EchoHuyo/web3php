@@ -11,6 +11,7 @@ use Web3php\Contract\Call\EthereumContractCall;
 use Web3php\Contract\Config\ContractConfig;
 use Web3php\Contract\Event\AbstractEventDecode;
 use Web3php\Contract\Event\DecodeEventInterface;
+use Web3php\Contract\Event\EventFormatParamInterface;
 use Web3php\Contract\Event\Item\DecodeInputItem;
 use Web3php\Contract\Send\EthereumContractSend;
 
@@ -158,39 +159,53 @@ class EthereumContract extends AbstractContract
     /**
      * @param array $topics
      * @param string $data
-     * @param DecodeEventInterface $decodeEvent
+     * @param EventFormatParamInterface|null $eventFormatParam
      * @return DecodeInputItem
      */
-    public function decodeEvent(array $topics, string $data, DecodeEventInterface $decodeEvent): DecodeInputItem
+    public function decodeEvent(array $topics, string $data, ?EventFormatParamInterface $eventFormatParam = null): DecodeInputItem
     {
         $signature = array_shift($topics);
         $event = $this->getContractEvent($signature);
-        $inputs = [];
+        $inputs = null;
         $name = "";
         if ($event) {
             $name = $event['name'];
             $contractEvent = $event['event'];
-            $key = $valueInput = [];
-            foreach ($contractEvent['inputs'] as $input) {
-                if ($input['indexed']) {
-                    $param = array_shift($topics);
-                    $value = current($this->contract->getEthabi()->decodeParameters([$input['type']], $param));
-                    $inputs[$input['name']] = $decodeEvent->formatParam($input['type'], $input['name'], $value);
-                } else {
-                    $valueInput[] = $input['type'];
-                    $key[] = $input['name'];
-                }
-            }
-            if (!empty($valueInput)) {
-                $valueData = $this->contract->getEthabi()->decodeParameters($valueInput, $data);
-                $inputsData = [];
-                foreach ($valueInput as $k => $type) {
-                    $inputsData[$key[$k]] = $decodeEvent->formatParam($type, $key[$k], $valueData[$k]);
-                }
-                $inputs = array_merge($inputs, $inputsData);
-            }
+            $inputs = $this->eventDecode($contractEvent['inputs'],$topics,$data,$eventFormatParam);
         }
         return new DecodeInputItem($name, $inputs);
+    }
+
+    protected function eventDecode(array $inputs,array $topics,string $data,?EventFormatParamInterface $eventFormatParam = null):array
+    {
+        $key = $valueInput = [];
+        $deInputs = [];
+        foreach ($inputs as $input) {
+            if ($input['indexed']) {
+                $param = array_shift($topics);
+                $value = current($this->contract->getEthabi()->decodeParameters([$input['type']], $param));
+                if($eventFormatParam){
+                    $value = $eventFormatParam->formatParam($input['type'], $input['name'], $value);
+                }
+                $deInputs[$input['name']] = $value;
+            } else {
+                $valueInput[] = $input['type'];
+                $key[] = $input['name'];
+            }
+        }
+        if (!empty($valueInput)) {
+            $valueData = $this->contract->getEthabi()->decodeParameters($valueInput, $data);
+            $inputsData = [];
+            foreach ($valueInput as $k => $type) {
+                $value = $valueData[$k];
+                if($eventFormatParam){
+                    $value = $eventFormatParam->formatParam($type, $key[$k],$value);
+                }
+                $inputsData[$key[$k]] = $value;
+            }
+            $deInputs = array_merge($deInputs, $inputsData);
+        }
+        return $deInputs;
     }
 
 

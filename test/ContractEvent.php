@@ -6,7 +6,6 @@ use Web3php\Address\Utils\TronAddressUtil;
 use Web3php\Chain\ChainFactory;
 use Web3php\Chain\Config\ChainConfig;
 use Web3php\Contract\Event\ContractEventFactory;
-use Web3php\Contract\Type\ERC20\ERC20Factory;
 use Web3php\Contract\Type\Erc20And721Transfer\Erc20And721TransferEventContract;
 use Web3php\Contract\Type\Erc20And721Transfer\ERC20And721TransferEventContractFactory;
 
@@ -70,7 +69,7 @@ class test extends \Web3php\Contract\Event\AbstractEventDecode
 
     public function decodeEvent(array $topics, string $data): \Web3php\Contract\Event\Item\DecodeInputItem
     {
-        return $this->eventContract->decodeEvent($topics, $data);
+        return $this->eventContract->decodeEvent($topics, $data,$this);
     }
 
     public function huddle(\Web3php\Contract\Event\Item\LogsItem $logsItem): void
