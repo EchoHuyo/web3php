@@ -4,6 +4,7 @@ namespace Web3php\Contract\Type\ERC1155;
 
 use Web3php\Address\AddressInterface;
 use Web3php\Chain\Ethereum\Ethereum;
+use Web3php\Constants\Enums\Address\AddressCode;
 use Web3php\Contract\Config\ContractConfig;
 
 class ERC1155Factory
@@ -12,11 +13,32 @@ class ERC1155Factory
 
     protected ERC1155 $ERC1155;
 
-    public function make(Ethereum $chain,AddressInterface $address):ERC1155
+    /**
+     * @var string[]
+     */
+    protected array $event = ["TransferBatch", "TransferSingle"];
+
+    /**
+     * @param Ethereum $chain
+     * @param AddressInterface|null $address
+     * @param array|null $event
+     * @return ERC1155
+     */
+    public function make(Ethereum $chain, AddressInterface $address = null, array $event = null): ERC1155
     {
-        if(empty($this->ERC1155)){
-            $this->ERC1155 = new ERC1155($chain,new ContractConfig($address,$this->abi));
+        if (empty($this->ERC1155)) {
+            if (empty($event)) {
+                $event = $this->event;
+            }
+            if (empty($address)) {
+                $address = $chain->getAddress(AddressCode::ZERO_ADDRESS);
+            }
+            $this->ERC1155 = new ERC1155($chain, new ContractConfig($address, $this->abi, $event));
         }
-        return clone $this->ERC1155;
+        $ERC1155 = clone $this->ERC1155;
+        if ($address && !$this->ERC1155->getContractAddress()->compare($address->getAddress())) {
+            $ERC1155->setContractAddress($address);
+        }
+        return $ERC1155;
     }
 }

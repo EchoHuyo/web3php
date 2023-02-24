@@ -64,10 +64,8 @@ class EthereumContract extends AbstractContract
      */
     public function setContractAddress(AddressInterface $address): void
     {
-        $this->contractAddress = $address;
-        $this->contract = (new Contract($this->chain->getWeb3()->getProvider(), $this->config->abi))->at($address->getAddress());
-        $this->contractCall = new EthereumContractCall($this);
-        $this->contractSend = new EthereumContractSend($this);
+        $this->config->address = $address;
+        $this->reloadConfig($this->config);
     }
 
     /**

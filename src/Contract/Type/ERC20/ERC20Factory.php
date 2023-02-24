@@ -5,6 +5,7 @@ namespace Web3php\Contract\Type\ERC20;
 use Web3php\Address\AddressInterface;
 use Web3php\Chain\Ethereum\Ethereum;
 use Web3php\Chain\Tron\TronChain;
+use Web3php\Constants\Enums\Address\AddressCode;
 use Web3php\Contract\Config\ContractConfig;
 
 class ERC20Factory
@@ -14,19 +15,42 @@ class ERC20Factory
     protected ERC20 $ERC20;
 
     protected TRC20 $TRC20;
+    /**
+     * @var string[]
+     */
+    protected array $event = ["Transfer"];
 
-    public function makeERC20(Ethereum $chain,AddressInterface $address):ERC20
+    /**
+     * @param Ethereum $chain
+     * @param AddressInterface|null $address
+     * @param array|null $event
+     * @return ERC20
+     */
+    public function makeERC20(Ethereum $chain, AddressInterface $address = null, array $event = null): ERC20
     {
-        if(empty($this->ERC20)){
-            $this->ERC20 = new ERC20($chain,new ContractConfig($address,$this->abi,["Transfer"]));
+        if (empty($this->ERC20)) {
+            if (empty($event)) {
+                $event = $this->event;
+            }
+            if (empty($address)) {
+                $address = $chain->getAddress(AddressCode::ZERO_ADDRESS);
+            }
+            $this->ERC20 = new ERC20($chain, new ContractConfig($address, $this->abi, $event));
         }
-        return clone $this->ERC20;
+        $erc20 = clone $this->ERC20;
+        if ($address && !$this->ERC20->getContractAddress()->compare($address->getAddress())) {
+            $erc20->setContractAddress($address);
+        }
+        return $erc20;
     }
 
-    public function makeTRC20(TronChain $chain,AddressInterface $address):TRC20
+    public function makeTRC20(TronChain $chain, AddressInterface $address): TRC20
     {
-        if(empty($this->TRC20)){
-            $this->TRC20 = new TRC20($chain,new ContractConfig($address,$this->abi,["Transfer"]));
+        if (empty($this->TRC20)) {
+            $this->TRC20 = new TRC20($chain, new ContractConfig($address, $this->abi));
+        }
+        if (!$this->TRC20->getContractAddress()->compare($address->getAddress())) {
+            $this->TRC20->setContractAddress($address);
         }
         return clone $this->TRC20;
     }
