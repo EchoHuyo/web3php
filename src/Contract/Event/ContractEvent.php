@@ -3,7 +3,6 @@
 namespace Web3php\Contract\Event;
 
 use phpseclib\Math\BigInteger;
-use Web3\Utils;
 use Web3php\Chain\ChainInterface\ChainInterface;
 use Web3php\Contract\Event\EventContract\EventContractInterface;
 use Web3php\Contract\Event\EventSignature\EventSignatureInterface;
@@ -19,14 +18,11 @@ class ContractEvent
     public function __construct(
         protected ChainInterface          $chain,
         protected EventSignatureInterface $eventSignature,
-        protected ?EventContractInterface  $eventContract
+        protected ?EventContractInterface $eventContract
     )
     {
 
     }
-
-
-
 
     /**
      * @param string $hash
@@ -57,7 +53,7 @@ class ContractEvent
                 $log["blockHash"],
                 null
             );
-            if($this->eventContract){
+            if ($this->eventContract) {
                 $eventContract = $this->eventContract->retrieveContractAddress($contractAddress);
                 if ($eventContract) {
                     $logsItem = $this->huddle($eventContract, $logsItem);
@@ -74,7 +70,8 @@ class ContractEvent
 
     protected function huddle(DecodeEventInterface $contractHuddle, LogsItem $logsItem): LogsItem
     {
-        $decodeInput = $contractHuddle->decodeEvent($logsItem->topics, $logsItem->data);
+        $decodeInput = $contractHuddle->decodeEvent($logsItem->topics, $logsItem->data,
+            $this->chain->getAddress($logsItem->contractAddress));
         $logsItem->decodeInputItem = $decodeInput;
         $contractHuddle->huddle($logsItem);
         return $logsItem;
