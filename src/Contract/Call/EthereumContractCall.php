@@ -20,7 +20,6 @@ class EthereumContractCall implements ContractCallInterface
             }
             $data = $result;
         };
-        var_dump("call --- ".$this->contract->getContract()->getToAddress());
         $this->contract->getContract()->call(...$arguments);
         return $data;
     }

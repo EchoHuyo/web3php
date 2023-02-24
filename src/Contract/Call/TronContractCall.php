@@ -15,7 +15,6 @@ class TronContractCall implements ContractCallInterface
 
     public function __call(string $name, array $arguments)
     {
-        var_dump($this->contract->getContractAddress()->getAddress());
         $tron = $this->contract->getChain()->getTron();
         return $tron->getTransactionBuilder()
             ->triggerConstantContract(
