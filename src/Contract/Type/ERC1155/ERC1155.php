@@ -15,6 +15,11 @@ class ERC1155 extends EthereumContract implements ERC1155Interface
         return current($this->call()->symbol());
     }
 
+    public function name(): string
+    {
+        return current($this->call()->name());
+    }
+
     public function balanceOf(AddressInterface $address, int $tokenId): int
     {
         $data = $this->call()->balanceOf($address->getAddress(), new BigInteger($tokenId));

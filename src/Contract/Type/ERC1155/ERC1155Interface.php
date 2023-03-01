@@ -22,8 +22,6 @@ interface ERC1155Interface
 
     public function safeTransferFrom(AddressInterface $from, AddressInterface $to, int $id, int $amount, string $data): string;
 
-    public function getTokenName(int $tokenId): string;
-
     /**
      * @param AddressInterface $from
      * @param AddressInterface $to
