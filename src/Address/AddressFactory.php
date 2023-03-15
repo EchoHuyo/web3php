@@ -30,12 +30,12 @@ class AddressFactory
         };
     }
 
-    public function makeEthereumAddress(string $address): AddressInterface
+    public function makeEthereumAddress(string $address): EthereumAddress
     {
         return new EthereumAddress($address);
     }
 
-    public function makeTronAddress(string $address): AddressInterface
+    public function makeTronAddress(string $address): TronAddress
     {
         if(str_starts_with($address, '41')){
             $address = $this->tronUtil->hexString2Address($address);

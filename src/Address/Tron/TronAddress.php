@@ -2,13 +2,13 @@
 
 namespace Web3php\Address\Tron;
 
-use Web3php\Address\AddressInterface;
+use Web3php\Address\AbstractAddress;
 use Web3php\Constants\Enums\Address\AddressCode;
 use Web3php\Constants\Errors\AddressErrors\ErrorCode;
 use Web3php\Exception\AddressException;
 use Web3php\Address\Utils\TronAddressUtil;
 
-class TronAddress implements AddressInterface
+class TronAddress extends AbstractAddress
 {
     public function __construct(protected string $address)
     {
@@ -23,11 +23,6 @@ class TronAddress implements AddressInterface
             return strtoupper($this->address) === strtoupper($address);
         }
         return false;
-    }
-
-    public function getAddress(): string
-    {
-        return $this->address;
     }
 
     public static function isAddress(string $address): bool

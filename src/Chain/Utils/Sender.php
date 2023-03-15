@@ -2,8 +2,6 @@
 
 namespace Web3php\Chain\Utils;
 
-
-
 use Web3php\Address\AddressInterface;
 
 class Sender

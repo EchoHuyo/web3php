@@ -16,6 +16,16 @@ interface AddressInterface
     public function getAddress(): string;
 
     /**
+     * @return string
+     */
+    public function toString():string;
+
+    /**
+     * @return string
+     */
+    public function __toString():string;
+
+    /**
      * @param string $address
      * @return bool
      */
