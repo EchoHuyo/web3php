@@ -1,6 +1,6 @@
 <?php
 
-namespace Web3php\Chain\Ethereum\Subscription\Methods;
+namespace Web3php\Chain\Ethereum\Subscription\Response;
 
 use Web3php\Exception\SubscribeException;
 
