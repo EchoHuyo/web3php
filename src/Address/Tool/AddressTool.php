@@ -12,18 +12,19 @@ use Web3php\Exception\AddressException;
 
 class AddressTool
 {
-    public function __construct(protected AddressFactory $addressFactory){
+    public function __construct(protected AddressFactory $addressFactory)
+    {
 
     }
 
-    public function generate():Sender
+    public function generate(): Sender
     {
         $config = [
             'private_key_type' => OPENSSL_KEYTYPE_EC,
             'curve_name' => 'secp256k1'
         ];
         $result = openssl_pkey_new($config);
-        if(empty($result)){
+        if (empty($result)) {
             throw new AddressException('ERROR: Fail to generate private key. -> ' . openssl_error_string());
         }
         openssl_pkey_export($result, $privateKey);
@@ -39,7 +40,7 @@ class AddressTool
         } catch (\Exception $exception) {
             throw new AddressException($exception->getMessage());
         }
-        $address = "0x".substr($hash,-40);
-        return new Sender($this->addressFactory->makeEthereumAddress($address),$privateKeyHex);
+        $address = "0x" . substr($hash, -40);
+        return new Sender($this->addressFactory->makeEthereumAddress($address), $privateKeyHex);
     }
 }

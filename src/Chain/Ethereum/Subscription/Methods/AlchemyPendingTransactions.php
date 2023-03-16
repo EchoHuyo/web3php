@@ -10,11 +10,11 @@ class AlchemyPendingTransactions extends BaseSubscription
      * @param AlchemyPendingTransactionsAddressItem|null $addressItem
      * @param bool $hashesOnly
      */
-    public function __construct(protected ?AlchemyPendingTransactionsAddressItem $addressItem = null,protected bool $hashesOnly = false)
+    public function __construct(protected ?AlchemyPendingTransactionsAddressItem $addressItem = null, protected bool $hashesOnly = false)
     {
         $arguments = ["alchemy_pendingTransactions"];
         $params = [];
-        if($this->addressItem){
+        if ($this->addressItem) {
             $params = $this->addressItem->toArray();
         }
         $params["hashesOnly"] = $this->hashesOnly;

@@ -15,8 +15,8 @@ class ContractEventFactory
      * @param EventContractInterface|null $eventContract
      * @return ContractEvent
      */
-    public function make(ChainInterface $chain,EventSignatureInterface $eventSignature,?EventContractInterface $eventContract): ContractEvent
+    public function make(ChainInterface $chain, EventSignatureInterface $eventSignature, ?EventContractInterface $eventContract): ContractEvent
     {
-        return new ContractEvent($chain,$eventSignature,$eventContract);
+        return new ContractEvent($chain, $eventSignature, $eventContract);
     }
 }

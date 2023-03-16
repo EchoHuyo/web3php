@@ -11,16 +11,16 @@ class AlchemyMinedTransactions extends BaseSubscription
      * @param bool $includeRemoved
      * @param bool $hashesOnly
      */
-    public function __construct(protected ?array $addressItems = null,protected bool $includeRemoved = false,protected bool $hashesOnly = false)
+    public function __construct(protected ?array $addressItems = null, protected bool $includeRemoved = false, protected bool $hashesOnly = false)
     {
         $arguments = ["alchemy_minedTransactions"];
         $params = [];
-        foreach ($this->addressItems as $item){
+        foreach ($this->addressItems as $item) {
             $params["address"][] = $item->toArray();
         }
         $params["includeRemoved"] = $this->includeRemoved;
         $params["hashesOnly"] = $this->hashesOnly;
-        if($params){
+        if ($params) {
             $arguments[] = $params;
         }
         parent::__construct($arguments);

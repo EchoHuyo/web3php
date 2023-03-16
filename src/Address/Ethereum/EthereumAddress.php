@@ -11,7 +11,7 @@ class EthereumAddress extends AbstractAddress
 {
     public function __construct(protected string $address)
     {
-        if(!static::isAddress($this->address)){
+        if (!static::isAddress($this->address)) {
             throw new AddressException(ErrorCode::ADDRESS_INVALID);
         }
         $this->address = Utils::toChecksumAddress($this->address);

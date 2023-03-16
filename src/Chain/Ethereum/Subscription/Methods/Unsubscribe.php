@@ -11,6 +11,6 @@ class Unsubscribe extends AbstractJsonRpc
     public function __construct(string $subscribe)
     {
         $arguments[] = $subscribe;
-        $this->setArguments($arguments);
+        parent::__construct($arguments);
     }
 }

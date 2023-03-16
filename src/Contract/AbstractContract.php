@@ -26,16 +26,16 @@ abstract class AbstractContract implements ContractInterface
         return $this->contractSend;
     }
 
-    public function getContractAddress():AddressInterface
+    public function getContractAddress(): AddressInterface
     {
         return $this->contractAddress;
     }
 
-    public abstract function getConfig():ContractConfig;
+    public abstract function getConfig(): ContractConfig;
 
-    public abstract function setContractAddress(AddressInterface $address):void;
+    public abstract function setContractAddress(AddressInterface $address): void;
 
-    public abstract function getChain():ChainInterface;
+    public abstract function getChain(): ChainInterface;
 
     /**
      * @param string $type
@@ -43,7 +43,7 @@ abstract class AbstractContract implements ContractInterface
      * @param mixed $param
      * @return mixed
      */
-    protected function format(string $type,string $paramName, mixed $param): mixed
+    protected function format(string $type, string $paramName, mixed $param): mixed
     {
         if ($type == 'address') {
             $param = $this->chain->getAddress($param);

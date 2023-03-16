@@ -29,7 +29,7 @@ interface ChainInterface
     // 检查交易 是否成功
     public function checkHashStatus(string $hash): array;
 
-    public function getTransactionReceipt(string $hash):mixed;
+    public function getTransactionReceipt(string $hash): mixed;
 
     //获取当前区块高度
     public function getBlock(): int;
@@ -40,7 +40,7 @@ interface ChainInterface
     public function getBlockByNumber(int $number): array;
 
     //获取链地址
-    public function getAddress(string $address):AddressInterface;
+    public function getAddress(string $address): AddressInterface;
 
     // 格式化金额
     public function fromWei(BigInteger $bigInteger, int $decimals = 0, int $scale = 6): string;

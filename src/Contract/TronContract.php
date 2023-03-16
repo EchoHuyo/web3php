@@ -17,17 +17,17 @@ class TronContract extends AbstractContract
         $this->setContractAddress($this->config->address);
     }
 
-    public function getChain():TronChain
+    public function getChain(): TronChain
     {
         return $this->chain;
     }
 
-    public function getConfig():ContractConfig
+    public function getConfig(): ContractConfig
     {
         return $this->config;
     }
 
-    public function setContractAddress(AddressInterface $address):void
+    public function setContractAddress(AddressInterface $address): void
     {
         $this->contractAddress = $address;
         $this->contractCall = new TronContractCall($this);

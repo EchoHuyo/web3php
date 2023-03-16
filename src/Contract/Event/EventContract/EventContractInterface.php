@@ -11,5 +11,5 @@ interface EventContractInterface
      * @param AddressInterface $address
      * @return DecodeEventInterface|null
      */
-    public function retrieveContractAddress(AddressInterface $address):?DecodeEventInterface;
+    public function retrieveContractAddress(AddressInterface $address): ?DecodeEventInterface;
 }

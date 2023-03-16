@@ -9,6 +9,7 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
+
 namespace Web3php\Address\Utils;
 
 use IEXBase\TronAPI\Support\Base58Check;
@@ -23,7 +24,7 @@ class TronAddressUtil
 
     public const ADDRESS_PREFIX_BYTE = 0x41;
 
-    public static function isAddress(string $address ): bool
+    public static function isAddress(string $address): bool
     {
         if (strlen($address) !== self::ADDRESS_SIZE) {
             return false;

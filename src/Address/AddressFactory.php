@@ -37,7 +37,7 @@ class AddressFactory
 
     public function makeTronAddress(string $address): TronAddress
     {
-        if(str_starts_with($address, '41')){
+        if (str_starts_with($address, '41')) {
             $address = $this->tronUtil->hexString2Address($address);
         }
         return new TronAddress($address);
@@ -81,13 +81,13 @@ class AddressFactory
         return $address;
     }
 
-    public function ethereumToTron(AddressInterface $address):AddressInterface
+    public function ethereumToTron(AddressInterface $address): AddressInterface
     {
         $address = $this->tronUtil->hexString2Address(str_replace('0x', '41', $address->getAddress()));
         return $this->makeTronAddress($address);
     }
 
-    public function tronToEthereum(AddressInterface $address):AddressInterface
+    public function tronToEthereum(AddressInterface $address): AddressInterface
     {
         $address = $this->address41To0x($this->tronUtil->address2HexString($address->getAddress()));
         return $this->makeEthereumAddress($address);
@@ -107,7 +107,7 @@ class AddressFactory
         return $this->makeEthereumAddress($address)->compare($this->util->publicKeyToAddress($publicKey));
     }
 
-    public function generateAddress():Sender
+    public function generateAddress(): Sender
     {
         return $this->tool->generate();
     }

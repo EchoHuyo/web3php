@@ -7,9 +7,4 @@ use Web3php\Chain\Utils\JsonRpc\AbstractJsonRpc;
 class BaseSubscription extends AbstractJsonRpc
 {
     protected string $method = "eth_subscribe";
-
-    public function __construct(array $arguments)
-    {
-        $this->setArguments($arguments);
-    }
 }

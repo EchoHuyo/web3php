@@ -10,7 +10,6 @@ use Web3php\Chain\Ethereum\Ethereum;
 use Web3php\Contract\Call\EthereumContractCall;
 use Web3php\Contract\Config\ContractConfig;
 use Web3php\Contract\Event\AbstractEventDecode;
-use Web3php\Contract\Event\DecodeEventInterface;
 use Web3php\Contract\Event\EventFormatParamInterface;
 use Web3php\Contract\Event\Item\DecodeInputItem;
 use Web3php\Contract\Send\EthereumContractSend;
@@ -169,12 +168,12 @@ class EthereumContract extends AbstractContract
         if ($event) {
             $name = $event['name'];
             $contractEvent = $event['event'];
-            $inputs = $this->eventDecode($contractEvent['inputs'],$topics,$data,$eventFormatParam);
+            $inputs = $this->eventDecode($contractEvent['inputs'], $topics, $data, $eventFormatParam);
         }
         return new DecodeInputItem($name, $inputs);
     }
 
-    protected function eventDecode(array $inputs,array $topics,string $data,?EventFormatParamInterface $eventFormatParam = null):array
+    protected function eventDecode(array $inputs, array $topics, string $data, ?EventFormatParamInterface $eventFormatParam = null): array
     {
         $key = $valueInput = [];
         $deInputs = [];
@@ -182,7 +181,7 @@ class EthereumContract extends AbstractContract
             if ($input['indexed']) {
                 $param = array_shift($topics);
                 $value = current($this->contract->getEthabi()->decodeParameters([$input['type']], $param));
-                if($eventFormatParam){
+                if ($eventFormatParam) {
                     $value = $eventFormatParam->formatParam($input['type'], $input['name'], $value);
                 }
                 $deInputs[$input['name']] = $value;
@@ -196,8 +195,8 @@ class EthereumContract extends AbstractContract
             $inputsData = [];
             foreach ($valueInput as $k => $type) {
                 $value = $valueData[$k];
-                if($eventFormatParam){
-                    $value = $eventFormatParam->formatParam($type, $key[$k],$value);
+                if ($eventFormatParam) {
+                    $value = $eventFormatParam->formatParam($type, $key[$k], $value);
                 }
                 $inputsData[$key[$k]] = $value;
             }

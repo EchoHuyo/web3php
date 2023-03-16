@@ -139,7 +139,7 @@ class TronChain implements ChainInterface
             throw new ChainException(ErrorCode::TRANSACTION_BEING_PACKAGED);
         }
         if ($data['receipt']['result'] != 'SUCCESS') {
-            throw new ChainException(ErrorCode::TRANSACTION_FAILED.$this->tron->hexString2Utf8($data['contractResult'][0]));
+            throw new ChainException(ErrorCode::TRANSACTION_FAILED . $this->tron->hexString2Utf8($data['contractResult'][0]));
         }
         return $data["log"];
     }

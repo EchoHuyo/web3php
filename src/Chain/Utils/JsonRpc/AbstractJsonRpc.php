@@ -26,13 +26,18 @@ class AbstractJsonRpc implements JsonRpcInterface
      */
     protected array $arguments = [];
 
+    public function __construct(array $arguments)
+    {
+        if (empty($this->id)) {
+            $this->id = rand();
+        }
+        $this->setArguments($arguments);
+    }
+
     public function toPayload(): array
     {
         if (empty($this->method)) {
             throw new JsonRpcInvalidArgumentException('Please check the method set properly.');
-        }
-        if (empty($this->id)) {
-            $this->id = rand();
         }
         $rpc = [
             'id' => $this->id,

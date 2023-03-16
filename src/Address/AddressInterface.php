@@ -18,12 +18,12 @@ interface AddressInterface
     /**
      * @return string
      */
-    public function toString():string;
+    public function toString(): string;
 
     /**
      * @return string
      */
-    public function __toString():string;
+    public function __toString(): string;
 
     /**
      * @param string $address

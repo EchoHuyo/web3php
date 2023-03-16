@@ -11,7 +11,7 @@ interface EventFormatParamInterface
      * @param AddressInterface $address
      * @return void
      */
-    public function setContractAddress(AddressInterface $address):void;
+    public function setContractAddress(AddressInterface $address): void;
 
     /**
      * @param string $type
@@ -19,5 +19,5 @@ interface EventFormatParamInterface
      * @param mixed $param
      * @return mixed
      */
-    public function formatParam(string $type,string $paramName, mixed $param): mixed;
+    public function formatParam(string $type, string $paramName, mixed $param): mixed;
 }
