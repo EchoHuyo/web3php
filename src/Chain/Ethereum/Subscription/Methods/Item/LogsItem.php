@@ -13,10 +13,10 @@ class LogsItem implements ItemInterface
      * [null, B]: Anything in first position and B in second position (and anything after).
      * [A, B]: A in first position and B in second position (and anything after).
      * [[A, B], [A, B]]: (A or B) in first position and (A or B) in second position (and anything after).
-     * @param EthereumAddress[]|null $addresses
+     * @param EthereumAddress[] $addresses
      * Singular address or array of addresses. Only logs created from one of these addresses will be emitted.
      */
-    public function __construct(protected array $topics, protected ?array $addresses = null)
+    public function __construct(protected array $topics, protected array $addresses = [])
     {
 
     }

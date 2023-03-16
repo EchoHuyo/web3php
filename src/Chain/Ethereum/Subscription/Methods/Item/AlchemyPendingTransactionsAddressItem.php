@@ -7,10 +7,10 @@ use Web3php\Address\Ethereum\EthereumAddress;
 class AlchemyPendingTransactionsAddressItem implements ItemInterface
 {
     /**
-     * @param EthereumAddress[]|null $toAddresses
-     * @param EthereumAddress[]|null $fromAddresses
+     * @param EthereumAddress[] $toAddresses
+     * @param EthereumAddress[] $fromAddresses
      */
-    public function __construct(protected ?array $toAddresses = null ,protected ?array $fromAddresses = null)
+    public function __construct(protected array $toAddresses = [] ,protected array $fromAddresses = [])
     {
 
     }
