@@ -2,8 +2,8 @@
 
 namespace Web3php\Contract\Type\Erc20And721Transfer;
 
+use Web3php\Chain\Utils\Tool\SignatureTool;
 use Web3php\Contract\EthereumContract;
-use Web3php\Contract\Event\AbstractEventDecode;
 use Web3php\Contract\Event\EventFormatParamInterface;
 use Web3php\Contract\Event\Item\DecodeInputItem;
 
@@ -64,7 +64,7 @@ class Erc20And721TransferEventContract extends EthereumContract
         $signature = array_shift($topics);
         $deInputs = null;
         $name = "";
-        if (AbstractEventDecode::signatureCompare($signature, $this->signature)) {
+        if (SignatureTool::signatureCompare($signature, $this->signature)) {
             $name = "Transfer";
             $inputs = $this->erc20Event;
             if (count($topics) > 2) {

@@ -7,9 +7,9 @@ use Web3\Contract;
 use Web3\Utils;
 use Web3php\Address\AddressInterface;
 use Web3php\Chain\Ethereum\Ethereum;
+use Web3php\Chain\Utils\Tool\SignatureTool;
 use Web3php\Contract\Call\EthereumContractCall;
 use Web3php\Contract\Config\ContractConfig;
-use Web3php\Contract\Event\AbstractEventDecode;
 use Web3php\Contract\Event\EventFormatParamInterface;
 use Web3php\Contract\Event\Item\DecodeInputItem;
 use Web3php\Contract\Send\EthereumContractSend;
@@ -85,7 +85,7 @@ class EthereumContract extends AbstractContract
             $events = $this->contract->getEvents();
             foreach ($events as $key => $event) {
                 if (in_array($key, $this->config->event)) {
-                    $signature = mb_strtolower(Utils::stripZero($this->contract->getEthabi()->encodeEventSignature($event)));
+                    $signature = SignatureTool::formatSignature($this->contract->getEthabi()->encodeEventSignature($event));
                     $this->eventList[$signature] = [
                         'name' => $key,
                         'event' => $event,
@@ -107,7 +107,7 @@ class EthereumContract extends AbstractContract
         foreach ($functions as $function) {
             $functionName = Utils::jsonMethodToString($function);
             $functionNameCode = $this->contract->getEthabi()->encodeFunctionSignature($functionName);
-            if (AbstractEventDecode::signatureCompare($functionNameCode, substr($encodeInput, 0, 10))) {
+            if (SignatureTool::signatureCompare($functionNameCode, substr($encodeInput, 0, 10))) {
                 $functionName = $function['name'];
                 $encodeInput = '0x' . substr($encodeInput, 10, mb_strlen($encodeInput));
                 $types = [];
@@ -132,14 +132,14 @@ class EthereumContract extends AbstractContract
 
     public function getContractEvent(string $signature): array
     {
-        $signature = mb_strtolower(Utils::stripZero($signature));
+        $signature = SignatureTool::formatSignature($signature);
         return $this->eventList[$signature] ?? [];
     }
 
     /**
      * @return string[]
      */
-    public function getTopic0List(): array
+    public function getEventSignatureList(): array
     {
         $data = [];
         foreach ($this->eventList as $signature => $item) {

@@ -8,7 +8,6 @@ use Web3php\Contract\Event\EventSignature\EventSignatureInterface;
 
 class ContractEventFactory
 {
-
     /**
      * @param ChainInterface $chain
      * @param EventSignatureInterface $eventSignature

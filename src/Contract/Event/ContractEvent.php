@@ -2,8 +2,8 @@
 
 namespace Web3php\Contract\Event;
 
-use phpseclib\Math\BigInteger;
 use Web3php\Chain\ChainInterface\ChainInterface;
+use Web3php\Chain\Utils\Tool\HexTool;
 use Web3php\Contract\Event\EventContract\EventContractInterface;
 use Web3php\Contract\Event\EventSignature\EventSignatureInterface;
 use Web3php\Contract\Event\Item\LogsItem;
@@ -18,7 +18,7 @@ class ContractEvent
     public function __construct(
         protected ChainInterface          $chain,
         protected EventSignatureInterface $eventSignature,
-        protected ?EventContractInterface $eventContract
+        protected ?EventContractInterface $eventContract = null
     )
     {
 
@@ -42,43 +42,41 @@ class ContractEvent
             $contractAddress = $this->chain->getAddress($log['address']);
             $eventSignature = $log['topics'][0];
             $logsItem = new LogsItem(
-                $this->hexToInt($log["logIndex"]),
+                HexTool::hexToInt($log["logIndex"]),
                 $contractAddress->getAddress(),
                 $eventSignature,
                 $log['topics'],
                 $log["data"],
                 $hash,
-                $this->hexToInt($log["blockNumber"]),
-                $this->hexToInt($log["transactionIndex"]),
+                HexTool::hexToInt($log["blockNumber"]),
+                HexTool::hexToInt($log["transactionIndex"]),
                 $log["blockHash"],
                 null
             );
             if ($this->eventContract) {
-                $eventContract = $this->eventContract->retrieveContractAddress($contractAddress);
-                if ($eventContract) {
-                    $logsItem = $this->huddle($eventContract, $logsItem);
+                $decodeEvent = $this->eventContract->retrieveContractAddress($contractAddress);
+                if ($decodeEvent) {
+                    $logsItem = $this->huddle($decodeEvent, $logsItem);
                 }
             }
-            $signatureEvent = $this->eventSignature->retrieveEventSignature($eventSignature);
-            if ($signatureEvent) {
-                $logsItem = $this->huddle($signatureEvent, $logsItem);
+            $signatureDecodeEvent = $this->eventSignature->retrieveEventSignature($eventSignature);
+            if ($signatureDecodeEvent) {
+                $logsItem = $this->huddle($signatureDecodeEvent, $logsItem);
             }
             $logsItems[] = $logsItem;
         }
         return $logsItems;
     }
 
-    protected function huddle(DecodeEventInterface $contractHuddle, LogsItem $logsItem): LogsItem
+    protected function huddle(DecodeEventInterface $decodeEvent, LogsItem $logsItem): LogsItem
     {
-        $decodeInput = $contractHuddle->decodeEvent($logsItem->topics, $logsItem->data,
-            $this->chain->getAddress($logsItem->contractAddress));
+        $decodeInput = $decodeEvent->decodeEvent(
+            $logsItem->topics,
+            $logsItem->data,
+            $this->chain->getAddress($logsItem->contractAddress)
+        );
         $logsItem->decodeInputItem = $decodeInput;
-        $contractHuddle->huddle($logsItem);
+        $decodeEvent->huddle($logsItem);
         return $logsItem;
-    }
-
-    protected function hexToInt(string $hex): int
-    {
-        return (int)(new BigInteger($hex, "16"))->toString();
     }
 }
