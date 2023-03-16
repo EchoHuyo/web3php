@@ -6,11 +6,11 @@ use Web3php\Exception\SubscribeException;
 
 class ResponseResult
 {
-    protected mixed $result;
+    protected mixed $result = null;
 
-    protected string $subscription;
+    protected string $subscription = "";
 
-    protected int $id;
+    protected int $id = 0;
 
     public function __construct(protected string $response)
     {
