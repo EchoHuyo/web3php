@@ -6,7 +6,7 @@ use Web3php\Contract\Event\Item\LogsItem;
 
 abstract class AbstractEventDecode implements DecodeEventInterface
 {
-    public function huddle(LogsItem $logsItem): void
+    public function handle(LogsItem $logsItem): void
     {
         //todo
     }

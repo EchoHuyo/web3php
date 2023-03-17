@@ -12,7 +12,7 @@ interface DecodeEventInterface
      * @param LogsItem $logsItem
      * @return void
      */
-    public function huddle(LogsItem $logsItem): void;
+    public function handle(LogsItem $logsItem): void;
 
     /**
      * @param array $topics

@@ -26,9 +26,10 @@ class ContractEvent
 
     /**
      * @param string $hash
+     * @param bool $callHandle
      * @return LogsItem[]|null
      */
-    public function listener(string $hash): array|null
+    public function listener(string $hash,bool $callHandle = false): array|null
     {
         /**
          * @var LogsItem[] $logsItems
@@ -56,19 +57,19 @@ class ContractEvent
             if ($this->eventContract) {
                 $decodeEvent = $this->eventContract->retrieveContractAddress($contractAddress);
                 if ($decodeEvent) {
-                    $logsItem = $this->huddle($decodeEvent, $logsItem);
+                    $logsItem = $this->handle($decodeEvent, $logsItem,$callHandle);
                 }
             }
             $signatureDecodeEvent = $this->eventSignature->retrieveEventSignature($eventSignature);
             if ($signatureDecodeEvent) {
-                $logsItem = $this->huddle($signatureDecodeEvent, $logsItem);
+                $logsItem = $this->handle($signatureDecodeEvent, $logsItem,$callHandle);
             }
             $logsItems[] = $logsItem;
         }
         return $logsItems;
     }
 
-    protected function huddle(DecodeEventInterface $decodeEvent, LogsItem $logsItem): LogsItem
+    protected function handle(DecodeEventInterface $decodeEvent, LogsItem $logsItem,bool $callHandle): LogsItem
     {
         $decodeInput = $decodeEvent->decodeEvent(
             $logsItem->topics,
@@ -76,7 +77,9 @@ class ContractEvent
             $this->chain->getAddress($logsItem->contractAddress)
         );
         $logsItem->decodeInputItem = $decodeInput;
-        $decodeEvent->huddle($logsItem);
+        if($callHandle){
+            $decodeEvent->handle($logsItem);
+        }
         return $logsItem;
     }
 }
