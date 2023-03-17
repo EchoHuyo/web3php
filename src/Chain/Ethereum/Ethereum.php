@@ -9,6 +9,7 @@ use Web3\Utils;
 use Web3\Web3;
 use Web3php\Address\AddressFactory;
 use Web3php\Address\AddressInterface;
+use Web3php\Address\Ethereum\EthereumAddress;
 use Web3php\Chain\ChainInterface\ChainInterface;
 use Web3php\Chain\Config\ChainConfig;
 use Web3php\Chain\Utils\Receiver;
@@ -212,7 +213,7 @@ class Ethereum implements ChainInterface
         return (array)$data;
     }
 
-    public function getAddress(string $address): AddressInterface
+    public function getAddress(string $address): EthereumAddress
     {
         return $this->addressFactory->makeEthereumAddress($address);
     }
@@ -252,5 +253,17 @@ class Ethereum implements ChainInterface
     public function toWei(string $amount, int $decimals = 0): BigInteger
     {
         return new BigInteger(bcmul($amount, bcpow('10', (string)$decimals)));
+    }
+
+    public function getCode(EthereumAddress $address):string
+    {
+        $result = "";
+        $this->getWeb3()->getEth()->getCode($address->toString(),function ($error,$data)use(&$result){
+            if (!empty($error)) {
+                throw $error;
+            }
+            $result = $data;
+        });
+        return $result;
     }
 }
