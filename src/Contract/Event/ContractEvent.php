@@ -6,7 +6,8 @@ use Web3php\Chain\ChainInterface\ChainInterface;
 use Web3php\Chain\Utils\Tool\HexTool;
 use Web3php\Contract\Event\EventContract\EventContractInterface;
 use Web3php\Contract\Event\EventSignature\EventSignatureInterface;
-use Web3php\Contract\Event\Item\LogsItem;
+use Web3php\Contract\Event\Item\DecodeInputItem;
+use Web3php\Contract\Event\Item\LogItem;
 
 class ContractEvent
 {
@@ -25,61 +26,40 @@ class ContractEvent
     }
 
     /**
-     * @param string $hash
+     * @param LogItem $logItem
      * @param bool $callHandle
-     * @return LogsItem[]|null
+     * @return DecodeInputItem|null
+     *
      */
-    public function listener(string $hash,bool $callHandle = false): array|null
+    public function decodeTopic(LogItem $logItem, bool $callHandle = false): ?DecodeInputItem
     {
-        /**
-         * @var LogsItem[] $logsItems
-         */
-        $logsItems = null;
-        $logs = $this->chain->checkHashStatus($hash);
-        foreach ($logs as $log) {
-            if (!is_array($log)) {
-                $log = (array)$log;
+        $contractAddress = $this->chain->getAddress($logItem->contractAddress);
+        $eventSignature = $logItem->eventSignature;
+        $decodeInput = null;
+        if ($this->eventContract) {
+            $decodeEvent = $this->eventContract->retrieveContractAddress($contractAddress);
+            if ($decodeEvent) {
+                $decodeInput = $this->handle($decodeEvent, $logItem,$callHandle);
             }
-            $contractAddress = $this->chain->getAddress($log['address']);
-            $eventSignature = $log['topics'][0];
-            $logsItem = new LogsItem(
-                HexTool::hexToInt($log["logIndex"]),
-                $contractAddress->getAddress(),
-                $eventSignature,
-                $log['topics'],
-                $log["data"],
-                $hash,
-                HexTool::hexToInt($log["blockNumber"]),
-                HexTool::hexToInt($log["transactionIndex"]),
-                $log["blockHash"],
-                null
-            );
-            if ($this->eventContract) {
-                $decodeEvent = $this->eventContract->retrieveContractAddress($contractAddress);
-                if ($decodeEvent) {
-                    $logsItem = $this->handle($decodeEvent, $logsItem,$callHandle);
-                }
-            }
-            $signatureDecodeEvent = $this->eventSignature->retrieveEventSignature($eventSignature);
-            if ($signatureDecodeEvent) {
-                $logsItem = $this->handle($signatureDecodeEvent, $logsItem,$callHandle);
-            }
-            $logsItems[] = $logsItem;
         }
-        return $logsItems;
+        $signatureDecodeEvent = $this->eventSignature->retrieveEventSignature($eventSignature);
+        if ($signatureDecodeEvent) {
+            $decodeInput = $this->handle($signatureDecodeEvent, $logItem,$callHandle);
+        }
+        return $decodeInput;
     }
 
-    protected function handle(DecodeEventInterface $decodeEvent, LogsItem $logsItem,bool $callHandle): LogsItem
+    protected function handle(DecodeEventInterface $decodeEvent, LogItem $logItem, bool $callHandle): DecodeInputItem
     {
         $decodeInput = $decodeEvent->decodeEvent(
-            $logsItem->topics,
-            $logsItem->data,
-            $this->chain->getAddress($logsItem->contractAddress)
+            $logItem->topics,
+            $logItem->data,
+            $this->chain->getAddress($logItem->contractAddress)
         );
-        $logsItem->decodeInputItem = $decodeInput;
+        $logItem->decodeInputItem = $decodeInput;
         if($callHandle){
-            $decodeEvent->handle($logsItem);
+            $decodeEvent->handle($logItem);
         }
-        return $logsItem;
+        return $decodeInput;
     }
 }

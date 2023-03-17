@@ -4,15 +4,15 @@ namespace Web3php\Contract\Event;
 
 use Web3php\Address\AddressInterface;
 use Web3php\Contract\Event\Item\DecodeInputItem;
-use Web3php\Contract\Event\Item\LogsItem;
+use Web3php\Contract\Event\Item\LogItem;
 
 interface DecodeEventInterface
 {
     /**
-     * @param LogsItem $logsItem
+     * @param LogItem $logItem
      * @return void
      */
-    public function handle(LogsItem $logsItem): void;
+    public function handle(LogItem $logItem): void;
 
     /**
      * @param array $topics

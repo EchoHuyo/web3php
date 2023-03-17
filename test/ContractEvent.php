@@ -72,7 +72,7 @@ class test extends \Web3php\Contract\Event\AbstractEventDecode
         return $this->eventContract->decodeEvent($topics, $data,$this);
     }
 
-    public function huddle(\Web3php\Contract\Event\Item\LogsItem $logsItem): void
+    public function huddle(\Web3php\Contract\Event\Item\LogItem $logsItem): void
     {
         var_dump($logsItem);
     }
@@ -101,7 +101,7 @@ $retrieveAddress->load($test);
 $contractEvent = $contractEventFactory->make($ethChain, $retrieveSignature, $retrieveAddress);
 
 
-$data = $contractEvent->listener("0xe4711a46046afadb23e039697cf75d7790bb36d52ad09d977314c0a8df660774");
+//$data = $contractEvent->decodeTopic();
 //var_dump($data);
 
 
