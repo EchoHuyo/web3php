@@ -31,7 +31,7 @@ class ContractEvent
      * @return DecodeInputItem|null
      *
      */
-    public function decodeTopic(LogItem $logItem, bool $callHandle = false): ?DecodeInputItem
+    public function decodeTopic(LogItem $logItem, bool $callHandle = true): ?DecodeInputItem
     {
         $contractAddress = $this->chain->getAddress($logItem->contractAddress);
         $eventSignature = $logItem->eventSignature;

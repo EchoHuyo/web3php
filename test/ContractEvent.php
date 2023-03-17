@@ -6,7 +6,7 @@ use Web3php\Address\Utils\TronAddressUtil;
 use Web3php\Chain\ChainFactory;
 use Web3php\Chain\Config\ChainConfig;
 use Web3php\Contract\Event\ContractEventFactory;
-use Web3php\Contract\Type\Erc20And721Transfer\Erc20And721TransferEventContract;
+use Web3php\Contract\Type\Erc20And721Transfer\ERC20And721TransferEventContract;
 use Web3php\Contract\Type\Erc20And721Transfer\ERC20And721TransferEventContractFactory;
 
 require_once __DIR__ . '/../vendor/autoload.php';
@@ -57,7 +57,7 @@ class RetrieveAddress implements \Web3php\Contract\Event\EventContract\EventCont
 class test extends \Web3php\Contract\Event\AbstractEventDecode
 {
 
-    protected Erc20And721TransferEventContract $eventContract;
+    protected ERC20And721TransferEventContract $eventContract;
 
     public function __construct(
         protected \Web3php\Chain\Ethereum\Ethereum        $chain,

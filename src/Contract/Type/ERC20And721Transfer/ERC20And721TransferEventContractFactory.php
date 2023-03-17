@@ -8,12 +8,12 @@ use Web3php\Contract\Config\ContractConfig;
 
 class ERC20And721TransferEventContractFactory
 {
-    protected Erc20And721TransferEventContract $contract;
+    protected ERC20And721TransferEventContract $contract;
 
-    public function make(Ethereum $chain): Erc20And721TransferEventContract
+    public function make(Ethereum $chain): ERC20And721TransferEventContract
     {
         if (empty($this->contract)) {
-            $this->contract = new Erc20And721TransferEventContract($chain,
+            $this->contract = new ERC20And721TransferEventContract($chain,
                 new ContractConfig($chain->getAddress(AddressCode::ZERO_ADDRESS), '[]')
             );
         }

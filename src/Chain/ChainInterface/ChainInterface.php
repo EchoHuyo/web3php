@@ -27,7 +27,7 @@ interface ChainInterface
     public function getTransaction(string $hash): object;
 
     // 检查交易 是否成功
-    public function checkHashStatus(string $hash): array;
+    public function checkHashStatus(string $hash);
 
     public function getTransactionReceipt(string $hash): mixed;
 

@@ -14,6 +14,7 @@ use Web3php\Chain\ChainInterface\ChainInterface;
 use Web3php\Chain\Config\ChainConfig;
 use Web3php\Chain\Utils\Receiver;
 use Web3php\Chain\Utils\Sender;
+use Web3php\Chain\Utils\Tool\HexTool;
 use Web3php\Constants\Errors\ChainErrors\ErrorCode;
 use Web3php\Exception\ChainException;
 use Web3p\EthereumTx\Transaction;
@@ -145,6 +146,9 @@ class Ethereum implements ChainInterface
     {
         $data = null;
         $this->getWeb3()->getEth()->getBalance($address->getAddress(), function ($error, $result) use (&$data) {
+            if ($error) {
+                throw $error;
+            }
             $data = $result;
         });
         return $data;
@@ -162,24 +166,16 @@ class Ethereum implements ChainInterface
         return $data;
     }
 
-    public function checkHashStatus(string $hash): array
+    public function checkHashStatus(string $hash)
     {
-        $data = null;
-        $this->getWeb3()->getEth()->getTransactionReceipt($hash, function ($error, $result) use (&$data) {
-            if ($error) {
-                throw $error;
-            }
-            $data = $result;
-        });
-        if (empty($data)) {
+        $result = $this->getTransactionReceipt($hash);
+        if (empty($result)) {
             throw new ChainException(ErrorCode::TRANSACTION_BEING_PACKAGED);
         }
-        $status = Utils::toWei($data->status, 'wei');
-        $check = (bool)$status->toString();
-        if (!$check) {
+        $status = HexTool::hexToInt($result->status);
+        if ($status < 1) {
             throw new ChainException(ErrorCode::TRANSACTION_FAILED);
         }
-        return $data->logs;
     }
 
     public function getTransactionReceipt(string $hash): object

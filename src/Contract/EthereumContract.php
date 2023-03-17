@@ -137,15 +137,16 @@ class EthereumContract extends AbstractContract
     }
 
     /**
-     * @return string[]
+     * @param bool $isPrefix
+     * @return array
      */
-    public function getEventSignatureList(): array
+    public function getEventSignatureList(bool $isPrefix = false): array
     {
-        $data = [];
+        $result = [];
         foreach ($this->eventList as $signature => $item) {
-            $data[] = '0x' . $signature;
+            $result[] = $isPrefix ? '0x' . $signature : $signature;
         }
-        return $data;
+        return $result;
     }
 
     public function getConfig(): ContractConfig

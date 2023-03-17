@@ -6,13 +6,25 @@ use Web3php\Chain\Utils\Tool\HexTool;
 
 class LogItem
 {
+    /**
+     * @param int $logIndex
+     * @param string $contractAddress
+     * @param string $eventSignature
+     * @param string[] $topics
+     * @param string $data
+     * @param string $transactionHash
+     * @param int $blockNumber
+     * @param int $transactionIndex
+     * @param string $blockHash
+     * @param DecodeInputItem|null $decodeInputItem
+     */
     public function __construct(
         public int              $logIndex,
         public string           $contractAddress,
         public string           $eventSignature,
         public array            $topics,
         public string           $data,
-        public string           $hash,
+        public string           $transactionHash,
         public int              $blockNumber,
         public int              $transactionIndex,
         public string           $blockHash,

@@ -126,9 +126,8 @@ class TronChain implements ChainInterface
     /**
      * 只判断合约交易是否成功
      * @param string $hash
-     * @return array
      */
-    public function checkHashStatus(string $hash): array
+    public function checkHashStatus(string $hash)
     {
         try {
             $data = $this->tron->getTransactionInfo($hash);
@@ -141,7 +140,6 @@ class TronChain implements ChainInterface
         if ($data['receipt']['result'] != 'SUCCESS') {
             throw new ChainException(ErrorCode::TRANSACTION_FAILED . $this->tron->hexString2Utf8($data['contractResult'][0]));
         }
-        return $data["log"];
     }
 
     public function getBlock(): int
