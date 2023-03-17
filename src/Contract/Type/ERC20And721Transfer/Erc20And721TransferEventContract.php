@@ -1,6 +1,6 @@
 <?php
 
-namespace Web3php\Contract\Type\Erc20And721Transfer;
+namespace Web3php\Contract\Type\ERC20And721Transfer;
 
 use Web3php\Chain\Utils\Tool\SignatureTool;
 use Web3php\Contract\EthereumContract;
