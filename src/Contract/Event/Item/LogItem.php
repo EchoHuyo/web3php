@@ -6,6 +6,19 @@ use Web3php\Chain\Utils\Tool\HexTool;
 
 class LogItem
 {
+    protected array $extra;
+
+    public function setExtra(array $extra):static
+    {
+        $this->extra = $extra;
+        return $this;
+    }
+
+    public function getExtra():?array
+    {
+        return $this->extra;
+    }
+
     /**
      * @param int $logIndex
      * @param string $contractAddress
