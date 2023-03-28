@@ -95,40 +95,7 @@ class EthereumContract extends AbstractContract
         }
     }
 
-    /**
-     * @param string $encodeInput
-     * @return DecodeInputItem
-     */
-    public function decodeInput(string $encodeInput): DecodeInputItem
-    {
-        $functions = $this->contract->getFunctions();
-        $inputs = [];
-        $functionName = "";
-        foreach ($functions as $function) {
-            $functionName = Utils::jsonMethodToString($function);
-            $functionNameCode = $this->contract->getEthabi()->encodeFunctionSignature($functionName);
-            if (SignatureTool::signatureCompare($functionNameCode, substr($encodeInput, 0, 10))) {
-                $functionName = $function['name'];
-                $encodeInput = '0x' . substr($encodeInput, 10, mb_strlen($encodeInput));
-                $types = [];
-                $key = [];
-                if (isset($function['inputs'])) {
-                    foreach ($function['inputs'] as $input) {
-                        if (isset($input['type'])) {
-                            $types[] = $input['type'];
-                            $key[] = $input['name'];
-                        }
-                    }
-                }
-                $decodeInputs = $this->contract->getEthabi()->decodeParameters($types, $encodeInput);
-//                $inputs = array_combine($key, $decodeInputs);
-                foreach ($types as $k => $type) {
-                    $inputs[$key[$k]] = $this->format($type, $key[$k], $decodeInputs[$k]);
-                }
-            }
-        }
-        return new DecodeInputItem($functionName, $inputs);
-    }
+
 
     public function getContractEvent(string $signature): array
     {
@@ -174,36 +141,86 @@ class EthereumContract extends AbstractContract
         return new DecodeInputItem($name, $inputs);
     }
 
+    /**
+     * @param array $inputs
+     * @param array $topics
+     * @param string $data
+     * @param EventFormatParamInterface|null $eventFormatParam
+     * @return array
+     */
     protected function eventDecode(array $inputs, array $topics, string $data, ?EventFormatParamInterface $eventFormatParam = null): array
     {
-        $key = $valueInput = [];
+        $valueInput = [];
         $deInputs = [];
+        $ethAbi = $this->contract->getEthabi();
         foreach ($inputs as $input) {
             if ($input['indexed']) {
                 $param = array_shift($topics);
-                $value = current($this->contract->getEthabi()->decodeParameters([$input['type']], $param));
-                if ($eventFormatParam) {
-                    $value = $eventFormatParam->formatParam($input['type'], $input['name'], $value);
-                }
-                $deInputs[$input['name']] = $value;
+                $value = current($ethAbi->decodeParameters([$input['type']], $param));
+                $deInputs[$input['name']] = $eventFormatParam ?
+                    $eventFormatParam->formatParam($input['type'], $input['name'], $value):$value;
             } else {
-                $valueInput[] = $input['type'];
-                $key[] = $input['name'];
+                $valueInput[] = [$input['type'], $input['name']];
             }
         }
         if (!empty($valueInput)) {
-            $valueData = $this->contract->getEthabi()->decodeParameters($valueInput, $data);
-            $inputsData = [];
-            foreach ($valueInput as $k => $type) {
-                $value = $valueData[$k];
-                if ($eventFormatParam) {
-                    $value = $eventFormatParam->formatParam($type, $key[$k], $value);
-                }
-                $inputsData[$key[$k]] = $value;
-            }
+            $inputsData = $this->decodeData($valueInput,$data,$eventFormatParam);
             $deInputs = array_merge($deInputs, $inputsData);
         }
         return $deInputs;
+    }
+
+    /**
+     * @param string $encodeInput
+     * @param EventFormatParamInterface|null $eventFormatParam
+     * @return DecodeInputItem
+     */
+    public function decodeInput(string $encodeInput,?EventFormatParamInterface $eventFormatParam = null): DecodeInputItem
+    {
+        $functions = $this->contract->getFunctions();
+        $inputs = [];
+        $functionName = "";
+        $ethAbi = $this->contract->getEthabi();
+        foreach ($functions as $function) {
+            $functionName = Utils::jsonMethodToString($function);
+            $functionNameCode = $ethAbi->encodeFunctionSignature($functionName);
+            if (SignatureTool::signatureCompare($functionNameCode, substr($encodeInput, 0, 10))) {
+                $functionName = $function['name'];
+                $encodeInput = '0x' . substr($encodeInput, 10, mb_strlen($encodeInput));
+                $valueInput = [];
+                if (isset($function['inputs'])) {
+                    foreach ($function['inputs'] as $input) {
+                        if (isset($input['type'])) {
+                            $valueInput[] = [$input['type'], $input['name']];
+                        }
+                    }
+                }
+                $inputs = $this->decodeData($valueInput,$encodeInput,$eventFormatParam);
+            }
+        }
+        return new DecodeInputItem($functionName, $inputs);
+    }
+
+    /**
+     * @param array  $valueInput <[type,name]>
+     * @param string $data
+     * @param EventFormatParamInterface|null $eventFormatParam
+     * @return array
+     */
+    protected function decodeData(array $valueInput,string $data,?EventFormatParamInterface $eventFormatParam = null):array
+    {
+        $valueData = $this->contract->getEthabi()->decodeParameters(array_column($valueInput, 0), $data);
+        $inputsData = array_combine(array_column($valueInput, 1), $valueData);
+        if ($eventFormatParam) {
+            $inputsData = array_map(
+                fn ($type, $name, $value) => [$name, $eventFormatParam->formatParam($type, $name, $value)],
+                array_column($valueInput, 0),
+                array_column($valueInput, 1),
+                $valueData
+            );
+            $inputsData = array_combine(array_column($inputsData, 0), array_column($inputsData, 1));
+        }
+        return $inputsData;
     }
 
 
