@@ -24,7 +24,7 @@ interface IERC20Interface
 
     public function approve(Receiver $receiver): string;
 
-    public function fromWei(BigInteger $bigInteger, int $scale);
+    public function fromWei(BigInteger $bigInteger);
 
     public function toWei(string $amount): BigInteger;
 }

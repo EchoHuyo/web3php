@@ -90,9 +90,9 @@ class ERC20 extends EthereumContract implements IERC20Interface
     }
 
     // 格式化金额
-    public function fromWei(BigInteger $bigInteger, int $scale = 6): string
+    public function fromWei(BigInteger $bigInteger): string
     {
-        return $this->getChain()->fromWei($bigInteger, $this->decimals(), $scale);
+        return $this->getChain()->fromWei($bigInteger, $this->decimals(), $this->decimals());
     }
 
     // 格式化金额 对象
