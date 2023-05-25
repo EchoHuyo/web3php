@@ -135,10 +135,10 @@ class TronChain implements ChainInterface
             throw new ChainException($e->getMessage());
         }
         if (empty($data)) {
-            throw new ChainException(ErrorCode::TRANSACTION_BEING_PACKAGED);
+            throw new ChainException(ErrorCode::TRANSACTION_BEING_PACKAGED,ErrorCode::TRANSACTION_BEING_PACKAGED_CODE);
         }
         if ($data['receipt']['result'] != 'SUCCESS') {
-            throw new ChainException(ErrorCode::TRANSACTION_FAILED . $this->tron->hexString2Utf8($data['contractResult'][0]));
+            throw new ChainException(ErrorCode::TRANSACTION_FAILED . $this->tron->hexString2Utf8($data['contractResult'][0]),ErrorCode::TRANSACTION_FAILED_CODE);
         }
     }
 

@@ -170,11 +170,11 @@ class Ethereum implements ChainInterface
     {
         $result = $this->getTransactionReceipt($hash);
         if (empty($result)) {
-            throw new ChainException(ErrorCode::TRANSACTION_BEING_PACKAGED);
+            throw new ChainException(ErrorCode::TRANSACTION_BEING_PACKAGED,ErrorCode::TRANSACTION_BEING_PACKAGED_CODE);
         }
         $status = HexTool::hexToInt($result->status);
         if ($status < 1) {
-            throw new ChainException(ErrorCode::TRANSACTION_FAILED);
+            throw new ChainException(ErrorCode::TRANSACTION_FAILED,ErrorCode::TRANSACTION_FAILED_CODE);
         }
     }
 
