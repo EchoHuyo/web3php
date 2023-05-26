@@ -178,7 +178,7 @@ class Ethereum implements ChainInterface
         }
     }
 
-    public function getTransactionReceipt(string $hash): object
+    public function getTransactionReceipt(string $hash): ?object
     {
         $data = null;
         $this->getWeb3()->getEth()->getTransactionReceipt($hash, function ($error, $result) use (&$data) {
