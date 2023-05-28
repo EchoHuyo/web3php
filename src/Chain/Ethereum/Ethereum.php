@@ -25,6 +25,8 @@ class Ethereum implements ChainInterface
 
     protected Web3 $web3;
 
+    protected array $nonce;
+
     public function __construct(protected ChainConfig $config, protected AddressFactory $addressFactory)
     {
         if (!empty($this->config->sender)) {
@@ -230,14 +232,20 @@ class Ethereum implements ChainInterface
     // 获取nonce
     protected function getNonce(): string
     {
-        $data = null;
-        $this->getWeb3()->getEth()->getTransactionCount($this->sender->address->getAddress(), function ($error, $result) use (&$data) {
-            if (!empty($error)) {
-                throw $error;
-            }
-            $data = $result;
-        });
-        return $data->toString();
+        $address = $this->sender->address->toString();
+        if($this->nonce[$address]){
+            return $this->nonce[$address] ++;
+        }else{
+            $data = null;
+            $this->getWeb3()->getEth()->getTransactionCount($address, function ($error, $result) use (&$data) {
+                if (!empty($error)) {
+                    throw $error;
+                }
+                $data = $result;
+            });
+            $this->nonce[$address] = $data->toString();
+        }
+        return $this->nonce[$address];
     }
 
     public function fromWei(BigInteger $bigInteger, int $decimals = 18, int $scale = 6): string
