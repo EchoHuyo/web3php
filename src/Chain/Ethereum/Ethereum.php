@@ -116,7 +116,6 @@ class Ethereum implements ChainInterface
         ]);
         // 获取 nonce
         $nonce = $this->getNonce();
-        var_dump($nonce);
         $tx = [
             'to' => $transaction->to,
             'value' => $transaction->value,
