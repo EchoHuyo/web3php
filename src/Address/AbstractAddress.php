@@ -6,6 +6,10 @@ abstract class AbstractAddress implements AddressInterface
 {
     protected string $address;
 
+    /**
+     * @return string
+     * @deprecated
+     */
     public function getAddress(): string
     {
         return $this->toString();

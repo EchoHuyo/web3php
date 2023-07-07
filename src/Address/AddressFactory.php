@@ -5,6 +5,7 @@ namespace Web3php\Address;
 use kornrunner\Keccak;
 use Sop\CryptoEncoding\PEM;
 use Sop\CryptoTypes\Asymmetric\EC\ECPrivateKey;
+use Web3\Utils;
 use Web3p\EthereumUtil\Util;
 use Web3php\Address\Ethereum\EthereumAddress;
 use Web3php\Address\Tron\TronAddress;
@@ -20,7 +21,11 @@ class AddressFactory
 
     protected TronAddressUtil $tronUtil;
 
-    public function getUtil():Util
+    /**
+     * @return Util
+     * @deprecated
+     */
+    protected function getUtil():Util
     {
         if(empty($this->util)){
             $this->util = new Util();
@@ -28,7 +33,10 @@ class AddressFactory
         return $this->util;
     }
 
-    public function getTronUtil():TronAddressUtil
+    /**
+     * @return TronAddressUtil
+     */
+    protected function getTronUtil():TronAddressUtil
     {
         if(empty($this->tronUtil)){
             $this->tronUtil = new TronAddressUtil();
@@ -39,8 +47,8 @@ class AddressFactory
     public function make(string $addressType, string $address): AddressInterface
     {
         return match ($addressType) {
-            AddressType::TronAddress => new TronAddress($address),
-            AddressType::EthereumAddress => new EthereumAddress($address),
+            AddressType::TronAddress => $this->makeTronAddress($address),
+            AddressType::EthereumAddress => $this->makeEthereumAddress($address),
             default => throw new AddressException(ErrorCode::NOT_FOUND_CHAIN),
         };
     }
@@ -58,12 +66,18 @@ class AddressFactory
         return new TronAddress($address);
     }
 
+    /**
+     * @param AddressInterface $addressEntity
+     * @param string $compareAddress
+     * @return bool
+     * @deprecated use AddressHelper()->compare()
+     */
     public function compare(AddressInterface $addressEntity, string $compareAddress): bool
     {
         if ($addressEntity instanceof EthereumAddress) {
             if (TronAddress::isAddress($compareAddress)) {
                 $address = $this->address41To0x($this->getTronUtil()->address2HexString($compareAddress));
-                $compareAddress = $this->makeEthereumAddress($address)->getAddress();
+                $compareAddress = $this->makeEthereumAddress($address)->toString();
             }
             return $addressEntity->compare($compareAddress);
         }
@@ -77,6 +91,12 @@ class AddressFactory
         return false;
     }
 
+    /**
+     * @param string $addressType
+     * @param string $privateKey
+     * @return AddressInterface
+     * @deprecated  use AddressHelper()->privateKeyToAddress()
+     */
     public function privateKeyToAddress(string $addressType, string $privateKey): AddressInterface
     {
         $publicKey = $this->getUtil()->privateKeyToPublicKey($privateKey);
@@ -96,22 +116,45 @@ class AddressFactory
         return $address;
     }
 
+    /**
+     * @param AddressInterface $address
+     * @return AddressInterface
+     * @deprecated  use AddressHelper()->ethereumToTron()
+     */
     public function ethereumToTron(AddressInterface $address): AddressInterface
     {
-        $address = $this->getTronUtil()->hexString2Address(str_replace('0x', '41', $address->getAddress()));
+        $address = $this->getTronUtil()->hexString2Address(str_replace('0x', '41', $address->toString()));
         return $this->makeTronAddress($address);
     }
 
+    /**
+     * @param AddressInterface $address
+     * @return AddressInterface
+     * @deprecated  use AddressHelper()->tronToEthereum()
+     */
     public function tronToEthereum(AddressInterface $address): AddressInterface
     {
-        $address = $this->address41To0x($this->getTronUtil()->address2HexString($address->getAddress()));
+        $address = $this->address41To0x($this->getTronUtil()->address2HexString($address->toString()));
         return $this->makeEthereumAddress($address);
     }
 
-
+    /**
+     * tron 只能验证 verifyMessageV2
+     * @param string $address
+     * @param string $msg
+     * @param string $signed
+     * @return bool
+     * @deprecated  use AddressHelper()->signVerify()
+     */
     public function signVerify(string $address, string $msg, string $signed): bool
     {
-        $hash = $this->getUtil()->hashPersonalMessage($msg);
+        if(!Utils::isAddress($address)){
+            $address = $this->tronToEthereum($this->makeTronAddress($address));
+            $hash = $this->getTronUtil()->hashPersonalMessage($msg);
+        }else{
+            $address = $this->makeEthereumAddress($address);
+            $hash = $this->getUtil()->hashPersonalMessage($msg);
+        }
         $r = substr($signed, 2, 64);
         $s = substr($signed, 66, 64);
         $v = ord(hex2bin(substr($signed, 130, 2))) - 27;
@@ -119,9 +162,13 @@ class AddressFactory
             return false;
         }
         $publicKey = $this->getUtil()->recoverPublicKey($hash, $r, $s, $v);
-        return $this->makeEthereumAddress($address)->compare($this->getUtil()->publicKeyToAddress($publicKey));
+        return $address->compare($this->getUtil()->publicKeyToAddress($publicKey));
     }
 
+    /**
+     * @return Sender
+     * @deprecated  use AddressHelper()->generateAddress()
+     */
     public function generateAddress(): Sender
     {
         $config = [
@@ -133,7 +180,6 @@ class AddressFactory
             throw new AddressException('ERROR: Fail to generate private key. -> ' . openssl_error_string());
         }
         openssl_pkey_export($result, $privateKey);
-//        $keyDetail = openssl_pkey_get_details($result);
         $privatePem = PEM::fromString($privateKey);
         $ecPrivateKey = ECPrivateKey::fromPEM($privatePem);
         $ecPrivateSeq = $ecPrivateKey->toASN1();

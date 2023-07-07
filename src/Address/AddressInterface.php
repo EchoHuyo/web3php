@@ -12,6 +12,7 @@ interface AddressInterface
 
     /**
      * @return string
+     * @deprecated
      */
     public function getAddress(): string;
 
@@ -19,12 +20,6 @@ interface AddressInterface
      * @return string
      */
     public function toString(): string;
-
-    /**
-     * @return string
-     */
-    public function __toString(): string;
-
     /**
      * @param string $address
      * @return bool

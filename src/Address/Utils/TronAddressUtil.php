@@ -52,4 +52,10 @@ class TronAddressUtil
         }
         return false;
     }
+
+    public function hashPersonalMessage(string $message):string
+    {
+        $msg = sprintf("\x1TRON Signed Message:\n%d", mb_strlen($message));
+        return $this->sha3($msg);
+    }
 }
