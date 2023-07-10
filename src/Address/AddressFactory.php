@@ -44,13 +44,13 @@ class AddressFactory
         return $this->tronUtil;
     }
 
-    public function make(string $addressType, string $address): AddressInterface
+    public function make(string $address): AddressInterface
     {
-        return match ($addressType) {
-            AddressType::TronAddress => $this->makeTronAddress($address),
-            AddressType::EthereumAddress => $this->makeEthereumAddress($address),
-            default => throw new AddressException(ErrorCode::NOT_FOUND_CHAIN),
-        };
+        if(!Utils::isAddress($address)){
+            return $this->makeEthereumAddress($address);
+        }else{
+            return $this->makeTronAddress($address);
+        }
     }
 
     public function makeEthereumAddress(string $address): EthereumAddress
