@@ -46,7 +46,7 @@ class AddressFactory
 
     public function make(string $address): AddressInterface
     {
-        if(!Utils::isAddress($address)){
+        if(Utils::isAddress($address)){
             return $this->makeEthereumAddress($address);
         }else{
             return $this->makeTronAddress($address);

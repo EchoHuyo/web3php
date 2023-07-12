@@ -66,6 +66,17 @@ class AddressHelper
         };
     }
 
+    public function getAddressByChain(AddressInterface $address,string $chainType): AddressInterface
+    {
+        if($address instanceof EthereumAddress && $chainType == "TRON"){
+            $address =  $this->ethereumToTron($address);
+        }
+        if($address instanceof EthereumAddress && $chainType == "ethereum"){
+            $address =  $this->tronToEthereum($address);
+        }
+        return $address;
+    }
+
     public function ethereumToTron(AddressInterface $address): AddressInterface
     {
         $address = $this->tronUtil->hexString2Address(str_replace('0x', '41', $address->toString()));
