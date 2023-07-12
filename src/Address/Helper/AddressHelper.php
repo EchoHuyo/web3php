@@ -66,6 +66,20 @@ class AddressHelper
         };
     }
 
+    public function getAddressByChain(AddressInterface|string $address,string $chainType): AddressInterface
+    {
+        if(is_string($address)){
+            $address = $this->addressFactory->make($address);
+        }
+        if($address instanceof EthereumAddress && $chainType == "TRON"){
+            $address =  $this->ethereumToTron($address);
+        }
+        if($address instanceof EthereumAddress && $chainType == "ethereum"){
+            $address =  $this->tronToEthereum($address);
+        }
+        return $address;
+    }
+
     public function ethereumToTron(AddressInterface $address): AddressInterface
     {
         $address = $this->tronUtil->hexString2Address(str_replace('0x', '41', $address->toString()));
@@ -87,12 +101,11 @@ class AddressHelper
      */
     public function signVerify(string $address, string $msg, string $signed): bool
     {
-        if(!Utils::isAddress($address)){
-            $address = $this->tronToEthereum($this->addressFactory->makeTronAddress($address));
-            $hash = $this->tronUtil->hashPersonalMessage($msg);
-        }else{
-            $address = $this->addressFactory->makeEthereumAddress($address);
+        $address = $this->addressFactory->make($address);
+        if($address instanceof EthereumAddress){
             $hash = $this->util->hashPersonalMessage($msg);
+        }else{
+            $hash = $this->tronUtil->hashPersonalMessage($msg);
         }
         $r = substr($signed, 2, 64);
         $s = substr($signed, 66, 64);

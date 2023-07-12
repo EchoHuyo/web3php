@@ -36,7 +36,7 @@ class TronAddressUtil
         if (strlen($utf8) !== 25) {
             return false;
         }
-        if (strpos($utf8, chr(self::ADDRESS_PREFIX_BYTE)) !== 0) {
+        if (!str_starts_with($utf8, chr(self::ADDRESS_PREFIX_BYTE))) {
             return false;
         }
 
@@ -55,7 +55,7 @@ class TronAddressUtil
 
     public function hashPersonalMessage(string $message):string
     {
-        $msg = sprintf("\x1TRON Signed Message:\n%d", mb_strlen($message));
-        return $this->sha3($msg);
+        $msg = sprintf("\x19TRON Signed Message:\n%d", mb_strlen($message));
+        return $this->sha3($msg.$message);
     }
 }

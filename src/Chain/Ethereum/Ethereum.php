@@ -145,7 +145,7 @@ class Ethereum implements ChainInterface
     public function getBalance(AddressInterface $address): BigInteger
     {
         $data = null;
-        $this->getWeb3()->getEth()->getBalance($address->getAddress(), function ($error, $result) use (&$data) {
+        $this->getWeb3()->getEth()->getBalance($address->toString(), function ($error, $result) use (&$data) {
             if ($error) {
                 throw $error;
             }

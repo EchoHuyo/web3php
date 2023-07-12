@@ -9,6 +9,7 @@ use phpseclib\Math\BigInteger;
 use Web3\Utils;
 use Web3php\Address\AddressFactory;
 use Web3php\Address\AddressInterface;
+use Web3php\Address\Helper\AddressHelper;
 use Web3php\Chain\ChainInterface\ChainInterface;
 use Web3php\Chain\Config\ChainConfig;
 use Web3php\Chain\Utils\Receiver;
@@ -22,7 +23,11 @@ class TronChain implements ChainInterface
 
     protected Tron $tron;
 
-    public function __construct(protected ChainConfig $config, protected AddressFactory $addressFactory)
+    public function __construct(
+        protected ChainConfig $config,
+        protected AddressFactory $addressFactory,
+        protected AddressHelper $addressHelper
+    )
     {
         if (!empty($this->config->sender)) {
             $this->setSender($this->config->sender);
@@ -70,7 +75,7 @@ class TronChain implements ChainInterface
         }
         $this->tron->setPrivateKey($this->sender->privateKey);
         try {
-            $result = $this->tron->sendTransaction($receiver->address->getAddress(), (float)$receiver->amount, null, $this->sender->address->getAddress());
+            $result = $this->tron->sendTransaction($receiver->address->toString(), (float)$receiver->amount, null, $this->sender->address->toString());
         } catch (TronException $e) {
             throw new ChainException($e->getMessage());
         }
@@ -97,7 +102,7 @@ class TronChain implements ChainInterface
     public function getBalance(AddressInterface $address): BigInteger
     {
         try {
-            $balance = $this->tron->getBalance($address->getAddress(), true);
+            $balance = $this->tron->getBalance($address->toString(), true);
         } catch (TronException $e) {
             throw new ChainException($e->getMessage());
         }
@@ -169,11 +174,8 @@ class TronChain implements ChainInterface
 
     public function getAddress(string $address): AddressInterface
     {
-        if (Utils::isZeroPrefixed($address)) {
-            $address = $this->addressFactory->makeEthereumAddress($address);
-            return $this->addressFactory->ethereumToTron($address);
-        }
-        return $this->addressFactory->makeTronAddress($address);
+        $address = $this->addressFactory->make($address);
+        return $this->addressHelper->getAddressByChain($address,"TRON");
     }
 
     public function fromWei(BigInteger $bigInteger, int $decimals = 18, int $scale = 6): string
