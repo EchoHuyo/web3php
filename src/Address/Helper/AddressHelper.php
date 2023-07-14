@@ -20,8 +20,8 @@ use Web3php\Exception\AddressException;
 class AddressHelper
 {
     public function __construct(
-        protected AddressFactory $addressFactory,
-        protected Util $util,
+        protected AddressFactory  $addressFactory,
+        protected Util            $util,
         protected TronAddressUtil $tronUtil
     )
     {
@@ -66,16 +66,16 @@ class AddressHelper
         };
     }
 
-    public function getAddressByChain(AddressInterface|string $address,string $chainType): AddressInterface
+    public function getAddressByChain(AddressInterface|string $address, string $chainType): AddressInterface
     {
-        if(is_string($address)){
+        if (is_string($address)) {
             $address = $this->addressFactory->make($address);
         }
-        if($address instanceof EthereumAddress && $chainType == "TRON"){
-            $address =  $this->ethereumToTron($address);
+        if ($address instanceof EthereumAddress && $chainType == "TRON") {
+            $address = $this->ethereumToTron($address);
         }
-        if($address instanceof EthereumAddress && $chainType == "ethereum"){
-            $address =  $this->tronToEthereum($address);
+        if ($address instanceof EthereumAddress && $chainType == "ethereum") {
+            $address = $this->tronToEthereum($address);
         }
         return $address;
     }
@@ -102,9 +102,9 @@ class AddressHelper
     public function signVerify(string $address, string $msg, string $signed): bool
     {
         $address = $this->addressFactory->make($address);
-        if($address instanceof EthereumAddress){
+        if ($address instanceof EthereumAddress) {
             $hash = $this->util->hashPersonalMessage($msg);
-        }else{
+        } else {
             $hash = $this->tronUtil->hashPersonalMessage($msg);
         }
         $r = substr($signed, 2, 64);
@@ -114,7 +114,7 @@ class AddressHelper
             return false;
         }
         $publicKey = $this->util->recoverPublicKey($hash, $r, $s, $v);
-        return $address->compare($this->util->publicKeyToAddress($publicKey));
+        return $this->compare($address, $this->util->publicKeyToAddress($publicKey));
     }
 
     public function generateAddress(): Sender
