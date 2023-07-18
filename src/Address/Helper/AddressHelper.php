@@ -74,7 +74,7 @@ class AddressHelper
         if ($address instanceof EthereumAddress && $chainType == "TRON") {
             $address = $this->ethereumToTron($address);
         }
-        if ($address instanceof EthereumAddress && $chainType == "ethereum") {
+        if ($address instanceof TronAddress && $chainType == "ethereum") {
             $address = $this->tronToEthereum($address);
         }
         return $address;
