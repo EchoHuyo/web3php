@@ -36,7 +36,7 @@ class TronContract extends AbstractContract
 
     public function formatAddress(AddressInterface $address): string
     {
-        $sendAddress = $address->getAddress();
+        $sendAddress = $address->toString();
         if ($address instanceof TronAddress) {
             $sendAddress = $this->chain->getTron()->address2HexString($address->getAddress());
         }
