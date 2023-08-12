@@ -9,11 +9,6 @@ use Web3php\Contract\EthereumContract;
 
 class ERC20 extends EthereumContract implements IERC20Interface
 {
-    /**
-     * @var array<string,int>
-     */
-    protected array $decimals = [];
-
     public function name(): string
     {
         return current($this->call()->name());
@@ -26,12 +21,8 @@ class ERC20 extends EthereumContract implements IERC20Interface
 
     public function decimals(): int
     {
-        $address = $this->getContractAddress()->getAddress();
-        if (!isset($this->decimals[$address])) {
-            $decimals = current($this->call()->decimals());
-            $this->decimals[$address] = (int)$decimals->toString();
-        }
-        return $this->decimals[$address];
+        $decimals = current($this->call()->decimals());
+        return (int)$decimals->toString();
     }
 
     public function totalSupply(): string
@@ -46,7 +37,7 @@ class ERC20 extends EthereumContract implements IERC20Interface
 
     public function balanceOf(AddressInterface $address): string
     {
-        $data = $this->call()->balanceOf($address->getAddress());
+        $data = $this->call()->balanceOf($address->toString());
         if ($data) {
             $data = current($data);
         }
@@ -55,7 +46,7 @@ class ERC20 extends EthereumContract implements IERC20Interface
 
     public function balanceOfByBlockNumber(AddressInterface $address, int $block = 0): string
     {
-        $data = $this->call()->balanceOf($address->getAddress(), $block == 0 ? "latest" : $block);
+        $data = $this->call()->balanceOf($address->toString(), $block == 0 ? "latest" : $block);
         if ($data) {
             $data = current($data);
         }
@@ -65,7 +56,7 @@ class ERC20 extends EthereumContract implements IERC20Interface
     public function transfer(Receiver $receiver): string
     {
         $encode = [
-            $receiver->address->getAddress(),
+            $receiver->address->toString(),
             $this->toWei($receiver->amount),
         ];
         return $this->send()->transfer(...$encode);
@@ -73,7 +64,7 @@ class ERC20 extends EthereumContract implements IERC20Interface
 
     public function allowance(AddressInterface $address, AddressInterface $toAddress): string
     {
-        $data = $this->call()->allowance($address->getAddress(), $toAddress->getAddress());
+        $data = $this->call()->allowance($address->toString(), $toAddress->toString());
         if ($data) {
             $data = current($data);
         }
@@ -83,7 +74,7 @@ class ERC20 extends EthereumContract implements IERC20Interface
     public function approve(Receiver $receiver): string
     {
         $encode = [
-            $receiver->address->getAddress(),
+            $receiver->address->toString(),
             $this->toWei($receiver->amount),
         ];
         return $this->send()->approve(...$encode);
@@ -92,7 +83,8 @@ class ERC20 extends EthereumContract implements IERC20Interface
     // 格式化金额
     public function fromWei(BigInteger $bigInteger): string
     {
-        return $this->getChain()->fromWei($bigInteger, $this->decimals(), $this->decimals());
+        $decimals = $this->decimals();
+        return $this->getChain()->fromWei($bigInteger, $decimals, $decimals);
     }
 
     // 格式化金额 对象
