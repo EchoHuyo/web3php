@@ -9,10 +9,6 @@ use Web3php\Contract\TronContract;
 
 class TRC20 extends TronContract implements IERC20Interface
 {
-    /**
-     * @var array<string,int>
-     */
-    protected array $decimals = [];
 
     public function name(): string
     {
@@ -26,12 +22,8 @@ class TRC20 extends TronContract implements IERC20Interface
 
     public function decimals(): int
     {
-        $address = $this->getContractAddress()->getAddress();
-        if (!isset($this->decimals[$address])) {
-            $decimals = current($this->call()->decimals());
-            $this->decimals[$address] = (int)$decimals->toString();
-        }
-        return $this->decimals[$address];
+        $decimals = current($this->call()->decimals());
+        return (int)$decimals->toString();
     }
 
     public function totalSupply(): string
@@ -73,7 +65,7 @@ class TRC20 extends TronContract implements IERC20Interface
 
     public function allowance(AddressInterface $address, AddressInterface $toAddress): string
     {
-        $data = $this->call()->allowance($this->formatAddress($address), $toAddress->getAddress());
+        $data = $this->call()->allowance($this->formatAddress($address), $this->formatAddress($toAddress));
         if ($data) {
             $data = current($data);
         }
@@ -92,7 +84,8 @@ class TRC20 extends TronContract implements IERC20Interface
     // 格式化金额
     public function fromWei(BigInteger $bigInteger): string
     {
-        return $this->getChain()->fromWei($bigInteger, $this->decimals(), $this->decimals());
+        $decimals = $this->decimals();
+        return $this->getChain()->fromWei($bigInteger, $decimals, $decimals);
     }
 
     // 格式化金额 对象
