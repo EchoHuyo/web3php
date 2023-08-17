@@ -12,6 +12,7 @@ use Web3php\Contract\Call\EthereumContractCall;
 use Web3php\Contract\Config\ContractConfig;
 use Web3php\Contract\Event\EventFormatParamInterface;
 use Web3php\Contract\Event\Item\DecodeInputItem;
+use Web3php\Contract\Event\Item\LogItem;
 use Web3php\Contract\Send\EthereumContractSend;
 
 class EthereumContract extends AbstractContract
@@ -51,7 +52,7 @@ class EthereumContract extends AbstractContract
     {
         $this->contractAddress = $config->address;
         $this->config = $config;
-        $this->contract = (new Contract($this->chain->getWeb3()->getProvider(), $this->config->abi))->at($this->contractAddress->getAddress());
+        $this->contract = (new Contract($this->chain->getWeb3()->getProvider(), $this->config->abi))->at($this->contractAddress->toString());
         $this->contractCall = new EthereumContractCall($this);
         $this->contractSend = new EthereumContractSend($this);
         $this->loadEvent();
@@ -94,7 +95,6 @@ class EthereumContract extends AbstractContract
             }
         }
     }
-
 
 
     public function getContractEvent(string $signature): array
@@ -158,13 +158,13 @@ class EthereumContract extends AbstractContract
                 $param = array_shift($topics);
                 $value = current($ethAbi->decodeParameters([$input['type']], $param));
                 $deInputs[$input['name']] = $eventFormatParam ?
-                    $eventFormatParam->formatParam($input['type'], $input['name'], $value):$value;
+                    $eventFormatParam->formatParam($input['type'], $input['name'], $value) : $value;
             } else {
                 $valueInput[] = [$input['type'], $input['name']];
             }
         }
         if (!empty($valueInput)) {
-            $inputsData = $this->decodeData($valueInput,$data,$eventFormatParam);
+            $inputsData = $this->decodeData($valueInput, $data, $eventFormatParam);
             $deInputs = array_merge($deInputs, $inputsData);
         }
         return $deInputs;
@@ -175,7 +175,7 @@ class EthereumContract extends AbstractContract
      * @param EventFormatParamInterface|null $eventFormatParam
      * @return DecodeInputItem
      */
-    public function decodeInput(string $encodeInput,?EventFormatParamInterface $eventFormatParam = null): DecodeInputItem
+    public function decodeInput(string $encodeInput, ?EventFormatParamInterface $eventFormatParam = null): DecodeInputItem
     {
         $functions = $this->contract->getFunctions();
         $inputs = [];
@@ -195,25 +195,38 @@ class EthereumContract extends AbstractContract
                         }
                     }
                 }
-                $inputs = $this->decodeData($valueInput,$encodeInput,$eventFormatParam);
+                $inputs = $this->decodeData($valueInput, $encodeInput, $eventFormatParam);
             }
         }
         return new DecodeInputItem($functionName, $inputs);
     }
 
+    public function listener(string $hash, callable $callback): void
+    {
+        $transaction = $this->getChain()->getTransactionReceipt($hash);
+        foreach ($transaction->logs as $log) {
+            $logItem = LogItem::created((array)$log);
+            if (!$this->getContractAddress()->compare($logItem->contractAddress)) {
+                continue;
+            }
+            $logItem->decodeInputItem = $this->decodeEvent($logItem->topics, $logItem->data);
+            call_user_func($callback, $logItem);
+        }
+    }
+
     /**
-     * @param array  $valueInput <[type,name]>
+     * @param array $valueInput <[type,name]>
      * @param string $data
      * @param EventFormatParamInterface|null $eventFormatParam
      * @return array
      */
-    protected function decodeData(array $valueInput,string $data,?EventFormatParamInterface $eventFormatParam = null):array
+    protected function decodeData(array $valueInput, string $data, ?EventFormatParamInterface $eventFormatParam = null): array
     {
         $valueData = $this->contract->getEthabi()->decodeParameters(array_column($valueInput, 0), $data);
         $inputsData = array_combine(array_column($valueInput, 1), $valueData);
         if ($eventFormatParam) {
             $inputsData = array_map(
-                fn ($type, $name, $value) => [$name, $eventFormatParam->formatParam($type, $name, $value)],
+                fn($type, $name, $value) => [$name, $eventFormatParam->formatParam($type, $name, $value)],
                 array_column($valueInput, 0),
                 array_column($valueInput, 1),
                 $valueData

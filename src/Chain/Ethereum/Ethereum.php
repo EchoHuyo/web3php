@@ -10,7 +10,7 @@ use Web3\Web3;
 use Web3php\Address\AddressFactory;
 use Web3php\Address\AddressInterface;
 use Web3php\Address\Ethereum\EthereumAddress;
-use Web3php\Chain\ChainInterface\ChainInterface;
+use Web3php\Chain\AbstractChain;
 use Web3php\Chain\Config\ChainConfig;
 use Web3php\Chain\Utils\Receiver;
 use Web3php\Chain\Utils\Sender;
@@ -19,7 +19,7 @@ use Web3php\Constants\Errors\ChainErrors\ErrorCode;
 use Web3php\Exception\ChainException;
 use Web3p\EthereumTx\Transaction;
 
-class Ethereum implements ChainInterface
+class Ethereum extends AbstractChain
 {
     protected Sender $sender;
 
@@ -166,15 +166,15 @@ class Ethereum implements ChainInterface
         return $data;
     }
 
-    public function checkHashStatus(string $hash)
+    public function checkHashStatus(string $hash): void
     {
         $result = $this->getTransactionReceipt($hash);
         if (empty($result)) {
-            throw new ChainException(ErrorCode::TRANSACTION_BEING_PACKAGED,ErrorCode::TRANSACTION_BEING_PACKAGED_CODE);
+            throw new ChainException(ErrorCode::TRANSACTION_BEING_PACKAGED, ErrorCode::TRANSACTION_BEING_PACKAGED_CODE);
         }
         $status = HexTool::hexToInt($result->status);
         if ($status < 1) {
-            throw new ChainException(ErrorCode::TRANSACTION_FAILED,ErrorCode::TRANSACTION_FAILED_CODE);
+            throw new ChainException(ErrorCode::TRANSACTION_FAILED, ErrorCode::TRANSACTION_FAILED_CODE);
         }
     }
 
@@ -232,7 +232,7 @@ class Ethereum implements ChainInterface
     {
         $address = $this->sender->address->toString();
         $data = null;
-        $this->getWeb3()->getEth()->getTransactionCount($address, 'pending',function ($error, $result) use (&$data) {
+        $this->getWeb3()->getEth()->getTransactionCount($address, 'pending', function ($error, $result) use (&$data) {
             if (!empty($error)) {
                 throw $error;
             }
@@ -241,21 +241,10 @@ class Ethereum implements ChainInterface
         return $data->toString();
     }
 
-    public function fromWei(BigInteger $bigInteger, int $decimals = 18, int $scale = 6): string
-    {
-        $amount = bcdiv($bigInteger->toString(), bcpow('10', (string)$decimals), $scale);
-        return preg_replace('/[.]$/', '', preg_replace('/0+$/', '', $amount));
-    }
-
-    public function toWei(string $amount, int $decimals = 0): BigInteger
-    {
-        return new BigInteger(bcmul($amount, bcpow('10', (string)$decimals)));
-    }
-
-    public function getCode(EthereumAddress $address):string
+    public function getCode(EthereumAddress $address): string
     {
         $result = "";
-        $this->getWeb3()->getEth()->getCode($address->toString(),function ($error,$data)use(&$result){
+        $this->getWeb3()->getEth()->getCode($address->toString(), function ($error, $data) use (&$result) {
             if (!empty($error)) {
                 throw $error;
             }

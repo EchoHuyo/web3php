@@ -28,7 +28,7 @@ class ERC721 extends EthereumContract implements ERC721Interface
 
     public function balanceOf(AddressInterface $address): string
     {
-        $data = $this->call()->balanceOf($address->getAddress());
+        $data = $this->call()->balanceOf($address->toString());
         if ($data) {
             $data = current($data);
         }
@@ -46,17 +46,17 @@ class ERC721 extends EthereumContract implements ERC721Interface
 
     public function approve(AddressInterface $to, int $tokenId): string
     {
-        return $this->send()->approve($to->getAddress(), new BigInteger($tokenId));
+        return $this->send()->approve($to->toString(), new BigInteger($tokenId));
     }
 
     public function safeTransferFrom(AddressInterface $from, AddressInterface $to, int $tokenId): string
     {
-        return $this->send()->safeTransferFrom($from->getAddress(), $to->getAddress(), new BigInteger($tokenId));
+        return $this->send()->safeTransferFrom($from->toString(), $to->toString(), new BigInteger($tokenId));
     }
 
     public function transferFrom(AddressInterface $from, AddressInterface $to, int $tokenId): string
     {
-        return $this->send()->transferFrom($from->getAddress(), $to->getAddress(), new BigInteger($tokenId));
+        return $this->send()->transferFrom($from->toString(), $to->toString(), new BigInteger($tokenId));
     }
 
     public function getApproved(int $tokenId): string
@@ -70,12 +70,12 @@ class ERC721 extends EthereumContract implements ERC721Interface
 
     public function setApprovalForAll(AddressInterface $operator, bool $approved): string
     {
-        return $this->send()->setApprovalForAll($operator->getAddress(), $approved);
+        return $this->send()->setApprovalForAll($operator->toString(), $approved);
     }
 
     public function isApprovedForAll(AddressInterface $account, AddressInterface $operator): bool
     {
-        $data = $this->call()->isApprovedForAll($account->getAddress(), $operator->getAddress());
+        $data = $this->call()->isApprovedForAll($account->toString(), $operator->toString());
         if ($data) {
             $data = current($data);
         }

@@ -22,7 +22,7 @@ class ERC1155 extends EthereumContract implements ERC1155Interface
 
     public function balanceOf(AddressInterface $address, int $tokenId): int
     {
-        $data = $this->call()->balanceOf($address->getAddress(), new BigInteger($tokenId));
+        $data = $this->call()->balanceOf($address->toString(), new BigInteger($tokenId));
         if ($data) {
             $data = current($data);
         }
@@ -33,7 +33,7 @@ class ERC1155 extends EthereumContract implements ERC1155Interface
     {
         $addressList = [];
         foreach ($accounts as $account) {
-            $addressList[] = $account->getAddress();
+            $addressList[] = $account->toString();
         }
         $tokenId = [];
         foreach ($ids as $id) {
@@ -44,12 +44,12 @@ class ERC1155 extends EthereumContract implements ERC1155Interface
 
     public function setApprovalForAll(AddressInterface $operator, bool $approved): string
     {
-        return $this->send()->setApprovalForAll($operator->getAddress(), $approved);
+        return $this->send()->setApprovalForAll($operator->toString(), $approved);
     }
 
     public function isApprovedForAll(AddressInterface $account, AddressInterface $operator): bool
     {
-        $data = $this->call()->isApprovedForAll($account->getAddress(), $operator->getAddress());
+        $data = $this->call()->isApprovedForAll($account->toString(), $operator->toString());
         if ($data) {
             $data = current($data);
         }
@@ -58,7 +58,7 @@ class ERC1155 extends EthereumContract implements ERC1155Interface
 
     public function safeTransferFrom(AddressInterface $from, AddressInterface $to, int $id, int $amount, string $data): string
     {
-        return $this->send()->safeTransferFrom($from->getAddress(), $to->getAddress(), new BigInteger($id), new BigInteger($amount), $data);
+        return $this->send()->safeTransferFrom($from->toString(), $to->toString(), new BigInteger($id), new BigInteger($amount), $data);
     }
 
     public function safeBatchTransferFrom(AddressInterface $from, AddressInterface $to, array $ids, array $amounts, string $data): string
@@ -71,7 +71,7 @@ class ERC1155 extends EthereumContract implements ERC1155Interface
         foreach ($amounts as $amount) {
             $amountList[] = new BigInteger($amount);
         }
-        return $this->send()->safeBatchTransferFrom($from->getAddress(), $to->getAddress(), $tokenId, $amountList, $data);
+        return $this->send()->safeBatchTransferFrom($from->toString(), $to->toString(), $tokenId, $amountList, $data);
     }
 
     public function uri(int $tokenId): string

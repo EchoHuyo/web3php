@@ -19,7 +19,7 @@ class TronContractCall implements ContractCallInterface
         return $tron->getTransactionBuilder()
             ->triggerConstantContract(
                 json_decode($this->contract->getConfig()->abi, true),
-                $tron->address2HexString($this->contract->getContractAddress()->getAddress()),
+                $tron->address2HexString($this->contract->getContractAddress()->toString()),
                 $name,
                 $arguments
             );

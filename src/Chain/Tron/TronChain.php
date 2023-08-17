@@ -6,27 +6,26 @@ use IEXBase\TronAPI\Exception\TronException;
 use IEXBase\TronAPI\Provider\HttpProvider;
 use IEXBase\TronAPI\Tron;
 use phpseclib\Math\BigInteger;
-use Web3\Utils;
 use Web3php\Address\AddressFactory;
 use Web3php\Address\AddressInterface;
 use Web3php\Address\Helper\AddressHelper;
-use Web3php\Chain\ChainInterface\ChainInterface;
+use Web3php\Chain\AbstractChain;
 use Web3php\Chain\Config\ChainConfig;
 use Web3php\Chain\Utils\Receiver;
 use Web3php\Chain\Utils\Sender;
 use Web3php\Constants\Errors\ChainErrors\ErrorCode;
 use Web3php\Exception\ChainException;
 
-class TronChain implements ChainInterface
+class TronChain extends AbstractChain
 {
     protected Sender $sender;
 
     protected Tron $tron;
 
     public function __construct(
-        protected ChainConfig $config,
+        protected ChainConfig    $config,
         protected AddressFactory $addressFactory,
-        protected AddressHelper $addressHelper
+        protected AddressHelper  $addressHelper
     )
     {
         if (!empty($this->config->sender)) {
@@ -132,7 +131,7 @@ class TronChain implements ChainInterface
      * 只判断合约交易是否成功
      * @param string $hash
      */
-    public function checkHashStatus(string $hash)
+    public function checkHashStatus(string $hash): void
     {
         try {
             $data = $this->tron->getTransactionInfo($hash);
@@ -140,10 +139,10 @@ class TronChain implements ChainInterface
             throw new ChainException($e->getMessage());
         }
         if (empty($data)) {
-            throw new ChainException(ErrorCode::TRANSACTION_BEING_PACKAGED,ErrorCode::TRANSACTION_BEING_PACKAGED_CODE);
+            throw new ChainException(ErrorCode::TRANSACTION_BEING_PACKAGED, ErrorCode::TRANSACTION_BEING_PACKAGED_CODE);
         }
         if ($data['receipt']['result'] != 'SUCCESS') {
-            throw new ChainException(ErrorCode::TRANSACTION_FAILED . $this->tron->hexString2Utf8($data['contractResult'][0]),ErrorCode::TRANSACTION_FAILED_CODE);
+            throw new ChainException(ErrorCode::TRANSACTION_FAILED . $this->tron->hexString2Utf8($data['contractResult'][0]), ErrorCode::TRANSACTION_FAILED_CODE);
         }
     }
 
@@ -175,17 +174,6 @@ class TronChain implements ChainInterface
     public function getAddress(string $address): AddressInterface
     {
         $address = $this->addressFactory->make($address);
-        return $this->addressHelper->getAddressByChain($address,"TRON");
-    }
-
-    public function fromWei(BigInteger $bigInteger, int $decimals = 18, int $scale = 6): string
-    {
-        $amount = bcdiv($bigInteger->toString(), bcpow('10', (string)$decimals), $scale);
-        return preg_replace('/[.]$/', '', preg_replace('/0+$/', '', $amount));
-    }
-
-    public function toWei(string $amount, int $decimals = 0): BigInteger
-    {
-        return new BigInteger(bcmul($amount, bcpow('10', (string)$decimals)));
+        return $this->addressHelper->getAddressByChain($address, "TRON");
     }
 }

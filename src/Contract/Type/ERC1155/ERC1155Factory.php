@@ -36,7 +36,7 @@ class ERC1155Factory
             $this->ERC1155 = new ERC1155($chain, new ContractConfig($address, $this->abi, $event));
         }
         $ERC1155 = clone $this->ERC1155;
-        if ($address && !$this->ERC1155->getContractAddress()->compare($address->getAddress())) {
+        if ($address && !$this->ERC1155->getContractAddress()->compare($address->toString())) {
             $ERC1155->setContractAddress($address);
         }
         return $ERC1155;

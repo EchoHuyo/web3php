@@ -20,18 +20,18 @@ class TronContractSend implements ContractSendInterface
         $transfer = $tron->getTransactionBuilder()
             ->triggerSmartContract(
                 json_decode($this->contract->getConfig()->abi, true),
-                $tron->address2HexString($this->contract->getContractAddress()->getAddress()),
+                $tron->address2HexString($this->contract->getContractAddress()->toString()),
                 $name,
                 $arguments,
                 $feeLimit,
-                $tron->address2HexString($owner->address->getAddress()),
+                $tron->address2HexString($owner->address->toString()),
             );
 
         $result = $tron->getTransactionInfo($transfer['txID']);
         if ($result) {
         }
         $tron->setPrivateKey($owner->privateKey);
-        $tron->setAddress($owner->address->getAddress());
+        $tron->setAddress($owner->address->toString());
         $signedTransaction = $tron->signTransaction($transfer);
         $response = $tron->sendRawTransaction($signedTransaction);
         if (isset($response['result']) && $response['result']) {
