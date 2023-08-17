@@ -201,7 +201,7 @@ class EthereumContract extends AbstractContract
         return new DecodeInputItem($functionName, $inputs);
     }
 
-    public function listener(string $hash, callable $callback): void
+    public function listener(string $hash, callable $callback,?EventFormatParamInterface $eventFormatParam = null): void
     {
         $transaction = $this->getChain()->getTransactionReceipt($hash);
         foreach ($transaction->logs as $log) {
@@ -209,7 +209,7 @@ class EthereumContract extends AbstractContract
             if (!$this->getContractAddress()->compare($logItem->contractAddress)) {
                 continue;
             }
-            $logItem->decodeInputItem = $this->decodeEvent($logItem->topics, $logItem->data);
+            $logItem->decodeInputItem = $this->decodeEvent($logItem->topics, $logItem->data,$eventFormatParam);
             call_user_func($callback, $logItem);
         }
     }
