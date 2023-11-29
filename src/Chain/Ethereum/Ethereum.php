@@ -63,23 +63,21 @@ class Ethereum extends AbstractChain
         if ($receiver->mainAmount > 0) {
             $value = Utils::toHex(Utils::toWei($receiver->mainAmount, 'ether'));
         }
-        // 获取 gas上线
+        // 获取 gasLimit
         $gasLimit = $this->getEstimateGas([
             'from' => $this->sender->address->toString(),
             'to' => $receiver->address->toString(),
             'value' => $value,
-            'data' => $data ?? '0x',
+            'data' => $data ?? '0x0',
         ]);
-        // 获取 nonce
-        $nonce = $this->getNonce();
         $tx = [
             'to' => $receiver->address->toString(),
             'value' => $value,
-            'gas' => Utils::toHex(Utils::toWei($gasLimit->add(new BigInteger("10000")), 'wei'), true),
-            'gasPrice' => Utils::toHex(Utils::toWei($this->getGasPrice()->toHex(), 'gwei'), true),
-            'nonce' => Utils::toHex(Utils::toWei(new BigInteger($nonce), 'wei'), true),
+            'gas' => Utils::toHex($gasLimit->toHex(), true),
+            'gasPrice' => Utils::toHex($this->getGasPrice()->toHex(), true),
+            'nonce' => Utils::toHex($this->getNonce()->toHex(), true),
             'chainId' => $this->config->chainId,
-            'data' => $data ?? '0x',
+            'data' => $data ?? '0x0',
         ];
         $transaction = new Transaction($tx);
         $serializedTransaction = '0x' . $transaction->sign($this->sender->privateKey);
@@ -89,7 +87,7 @@ class Ethereum extends AbstractChain
     protected function getGasPrice(): BigInteger
     {
         if ($this->config->gasPrice >= 0) {
-            return new BigInteger($this->config->gasPrice);
+            return Utils::toWei((string)$this->config->gasPrice, "gwei");
         }
         $data = null;
         $this->getWeb3()->getEth()->gasPrice(function ($error, $result) use (&$data) {
@@ -98,7 +96,7 @@ class Ethereum extends AbstractChain
             }
             $data = $result;
         });
-        return new BigInteger($this->fromWei($data, 9));
+        return $data;
     }
 
     public function retryTransactionByHash(string $hash): string
@@ -107,27 +105,12 @@ class Ethereum extends AbstractChain
         if (!$this->sender->address->compare($transaction->from)) {
             throw new ChainException(ErrorCode::NOT_THE_SAME_FROM_ADDRESS);
         }
-        // 获取 gas上线
-        $gasLimit = $this->getEstimateGas([
-            'from' => $transaction->from,
-            'to' => $transaction->to,
-            'value' => $transaction->value,
-            'data' => $transaction->input,
-        ]);
-        // 获取 nonce
-        $nonce = $this->getNonce();
-        $tx = [
-            'to' => $transaction->to,
-            'value' => $transaction->value,
-            'gas' => Utils::toHex(Utils::toWei($gasLimit->add(new BigInteger("10000")), 'wei'), true),
-            'gasPrice' => Utils::toHex(Utils::toWei($this->getGasPrice()->toHex(), 'gwei'), true),
-            'nonce' => Utils::toHex(Utils::toWei(new BigInteger($nonce), 'wei'), true),
-            'chainId' => $this->config->chainId,
-            'data' => $transaction->input,
-        ];
-        $transaction = new Transaction($tx);
-        $serializedTransaction = '0x' . $transaction->sign($this->sender->privateKey);
-        return $this->sendRawTransaction($serializedTransaction);
+        $receiver = new Receiver(
+            $this->getAddress($transaction->to),
+            "0",
+            $this->fromWei($transaction->value,18,18)
+        );
+        return $this->sendTransaction($receiver,$transaction->input);
     }
 
     public function sendRawTransaction(string $hash): string
@@ -217,6 +200,9 @@ class Ethereum extends AbstractChain
     // 一次交易中gas的可用上限
     protected function getEstimateGas(array $params): BigInteger
     {
+        /**
+         * @var BigInteger $gasLimit
+         */
         $gasLimit = null;
         $this->getWeb3()->getEth()->estimateGas($params, function ($error, $result) use (&$gasLimit) {
             if ($error) {
@@ -224,11 +210,11 @@ class Ethereum extends AbstractChain
             }
             $gasLimit = $result;
         });
-        return $gasLimit;
+        return $gasLimit->add(new BigInteger("10000"));
     }
 
     // 获取nonce
-    protected function getNonce(): string
+    protected function getNonce(): BigInteger
     {
         $address = $this->sender->address->toString();
         $data = null;
@@ -238,7 +224,7 @@ class Ethereum extends AbstractChain
             }
             $data = $result;
         });
-        return $data->toString();
+        return $data;
     }
 
     public function getCode(EthereumAddress $address): string
