@@ -73,9 +73,9 @@ class Ethereum extends AbstractChain
         $tx = [
             'to' => $receiver->address->toString(),
             'value' => $value,
-            'gas' => Utils::toHex($gasLimit->toHex(), true),
-            'gasPrice' => Utils::toHex($this->getGasPrice()->toHex(), true),
-            'nonce' => Utils::toHex($this->getNonce()->toHex(), true),
+            'gas' => Utils::toHex($gasLimit, true),
+            'gasPrice' => Utils::toHex($this->getGasPrice(), true),
+            'nonce' => Utils::toHex($this->getNonce(), true),
             'chainId' => $this->config->chainId,
             'data' => $data ?? '0x0',
         ];
