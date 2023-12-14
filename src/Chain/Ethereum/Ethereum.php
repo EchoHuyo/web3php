@@ -11,6 +11,7 @@ use Web3php\Address\AddressFactory;
 use Web3php\Address\AddressInterface;
 use Web3php\Address\Ethereum\EthereumAddress;
 use Web3php\Chain\AbstractChain;
+use Web3php\Chain\ChainInterface\ChainGasPriceInterface;
 use Web3php\Chain\Config\ChainConfig;
 use Web3php\Chain\Utils\Receiver;
 use Web3php\Chain\Utils\Sender;
@@ -86,17 +87,22 @@ class Ethereum extends AbstractChain
 
     protected function getGasPrice(): BigInteger
     {
-        if ($this->config->gasPrice >= 0) {
-            return Utils::toWei((string)$this->config->gasPrice, "gwei");
-        }
-        $data = null;
-        $this->getWeb3()->getEth()->gasPrice(function ($error, $result) use (&$data) {
-            if ($error) {
-                throw $error;
+        $gasPrice = null;
+        if($this->config->gasPrice instanceof ChainGasPriceInterface){
+            $gasPrice = Utils::toWei($this->config->gasPrice->getGasPrice(), "gwei");
+        }else{
+            if (empty($gasPrice)) {
+                $gasPrice = Utils::toWei((string)$this->config->gasPrice, "gwei");
+            }else{
+                $this->getWeb3()->getEth()->gasPrice(function ($error, $result) use (&$gasPrice) {
+                    if ($error) {
+                        throw $error;
+                    }
+                    $gasPrice = $result;
+                });
             }
-            $data = $result;
-        });
-        return $data;
+        }
+        return $gasPrice;
     }
 
     public function retryTransactionByHash(string $hash): string
