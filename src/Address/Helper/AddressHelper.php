@@ -47,7 +47,7 @@ class AddressHelper
         }
         if ($addressEntity instanceof TronAddress) {
             if(!TronAddress::isAddress($compareAddress)){
-                if(!$this->util->isHex($compareAddress)){
+                if(!$this->util->isZeroPrefixed($compareAddress)){
                     $compareAddress = "41".$compareAddress;
                 }else{
                     $compareAddress = str_replace('0x', '41', $compareAddress);
