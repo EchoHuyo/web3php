@@ -155,7 +155,11 @@ class Ethereum extends AbstractChain
         return $data;
     }
 
-    public function checkHashStatus(string $hash): void
+    /**
+     * @param string $hash
+     * @return array
+     */
+    public function checkHashStatus(string $hash): array
     {
         $result = $this->getTransactionReceipt($hash);
         if (empty($result)) {
@@ -165,6 +169,7 @@ class Ethereum extends AbstractChain
         if ($status < 1) {
             throw new ChainException(ErrorCode::TRANSACTION_FAILED, ErrorCode::TRANSACTION_FAILED_CODE);
         }
+        return $result->logs;
     }
 
     public function getTransactionReceipt(string $hash): ?object

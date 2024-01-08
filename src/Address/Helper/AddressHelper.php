@@ -46,9 +46,13 @@ class AddressHelper
             return $addressEntity->compare($compareAddress);
         }
         if ($addressEntity instanceof TronAddress) {
-            $ethAddress = $this->address41To0x($compareAddress);
-            if (EthereumAddress::isAddress($ethAddress)) {
-                $compareAddress = $this->tronUtil->hexString2Address(str_replace('0x', '41', $ethAddress));
+            if(!TronAddress::isAddress($compareAddress)){
+                if(!$this->util->isHex($compareAddress)){
+                    $compareAddress = "41".$compareAddress;
+                }else{
+                    $compareAddress = str_replace('0x', '41', $compareAddress);
+                }
+                $compareAddress = $this->tronUtil->hexString2Address($compareAddress);
             }
             return $addressEntity->compare($compareAddress);
         }

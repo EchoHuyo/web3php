@@ -128,10 +128,10 @@ class TronChain extends AbstractChain
     }
 
     /**
-     * 只判断合约交易是否成功
      * @param string $hash
+     * @return array
      */
-    public function checkHashStatus(string $hash): void
+    public function checkHashStatus(string $hash): array
     {
         try {
             $data = $this->tron->getTransactionInfo($hash);
@@ -144,6 +144,7 @@ class TronChain extends AbstractChain
         if ($data['receipt']['result'] != 'SUCCESS') {
             throw new ChainException(ErrorCode::TRANSACTION_FAILED . $this->tron->hexString2Utf8($data['contractResult'][0]), ErrorCode::TRANSACTION_FAILED_CODE);
         }
+        return $data['log'];
     }
 
     public function getBlock(): int
